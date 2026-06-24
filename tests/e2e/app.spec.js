@@ -75,12 +75,12 @@ function completeRoute(map) {
 
 async function enterDeck(page) {
   await page.goto("/");
-  await page.getByRole("button", { name: "CONECTAR" }).click();
+  await page.getByRole("button", { name: /CONECTAR/ }).click();
   await expect(page.locator("#boot-screen")).toBeHidden({ timeout: 5000 });
 }
 
 async function generate(page) {
-  await page.getByRole("button", { name: /Gerar Senha Criptografada/ }).click();
+  await page.getByRole("button", { name: /Gerar Senha Segura/ }).click();
   await expect(page.locator("#vault-status")).toHaveText("SENHA BLOQUEADA PELO ICE");
   await expect(page.locator("#copy-button")).toBeDisabled();
   await expect(page.locator("#hide-password-button")).toBeHidden();
@@ -102,7 +102,7 @@ test("fluxo completo revela a senha somente após vencer o ICEbreaker", async ({
     });
   }, route);
 
-  await expect(page.locator("#vault-status")).toHaveText("SENHA DESCRIPTOGRAFADA");
+  await expect(page.locator("#vault-status")).toHaveText("SENHA LIBERADA");
   await expect(page.locator("#copy-button")).toBeEnabled();
   await expect(page.locator("#hide-password-button")).toBeVisible();
   await expect(page.locator("#mission-step-reveal")).toHaveClass(/active/);
@@ -190,6 +190,34 @@ test("modo estratégico elimina movimento autônomo dos bugs", async ({ page }) 
   await expect(page.locator("#game-status-detail")).not.toHaveText(before);
 });
 
+test("primeiro acesso oferece entrada sem áudio, tutorial e modo leve", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: /ENTRAR SEM ÁUDIO/ }).click();
+  await expect(page.locator("#boot-screen")).toBeHidden({ timeout: 5000 });
+  await expect(page.locator("#sound-label")).toHaveText("ÁUDIO SILENCIADO");
+  await expect(page.locator("#quiet-mode-button")).toHaveAttribute("aria-pressed", "true");
+
+  await page.locator("#sound-toggle").click();
+  await expect(page.locator("#sound-label")).toHaveText("ÁUDIO ATIVO");
+  await expect(page.locator("#quiet-mode-button")).toHaveAttribute("aria-pressed", "false");
+
+  await page.locator("#lite-toggle").click();
+  await expect(page.locator("body")).toHaveClass(/lite-mode/);
+  await expect(page.locator("#sound-label")).toHaveText("ÁUDIO SILENCIADO");
+  await expect(page.locator("#quiet-mode-button")).toHaveAttribute("aria-pressed", "true");
+
+  await page.locator("#training-start-button").click();
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("ArrowRight");
+  await expect(page.locator("#training-message")).toContainText("Fragmento coletado");
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("ArrowDown");
+  await expect(page.locator("#training-message")).toContainText("Tutorial completo");
+
+  await page.locator("#share-link-button").click();
+  await expect(page.locator("#share-link-button")).toContainText(/Link copiado|Copie no README/);
+});
+
 test("pulso fantasma congela bugs e consome carga", async ({ page }) => {
   await enterDeck(page);
   await page.locator("#difficulty").selectOption("rookie");
@@ -227,5 +255,5 @@ test("app shell permanece acessível offline", async ({ page, context }, testInf
   await context.setOffline(true);
   await page.reload();
   await expect(page).toHaveTitle("Netrunner Password Lab");
-  await expect(page.getByRole("button", { name: "CONECTAR" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /CONECTAR/ })).toBeVisible();
 });

@@ -39,7 +39,7 @@ test("recusa configuração sem protocolos", () => {
         numbers: false,
         symbols: false,
       }),
-    /Selecione pelo menos um/,
+    /Selecione pelo menos um tipo/,
   );
 });
 

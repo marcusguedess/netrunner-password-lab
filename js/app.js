@@ -9,11 +9,19 @@ const elements = {
   bootLog: document.querySelector("#boot-log"),
   bootProgress: document.querySelector("#boot-progress"),
   jackInButton: document.querySelector("#jack-in-button"),
+  silentEntryButton: document.querySelector("#silent-entry-button"),
   cityCanvas: document.querySelector("#city-canvas"),
   backgroundCanvas: document.querySelector("#background-canvas"),
   soundToggle: document.querySelector("#sound-toggle"),
   soundLabel: document.querySelector("#sound-label"),
   comfortToggle: document.querySelector("#comfort-toggle"),
+  liteToggle: document.querySelector("#lite-toggle"),
+  shareLinkButton: document.querySelector("#share-link-button"),
+  trainingGrid: document.querySelector("#training-grid"),
+  trainingStartButton: document.querySelector("#training-start-button"),
+  trainingResetButton: document.querySelector("#training-reset-button"),
+  trainingMessage: document.querySelector("#training-message"),
+  trainingTouchControls: document.querySelectorAll("[data-training-direction]"),
   musicVolume: document.querySelector("#music-volume"),
   ambientVolume: document.querySelector("#ambient-volume"),
   effectsVolume: document.querySelector("#effects-volume"),
@@ -42,6 +50,7 @@ const elements = {
   strengthBar: document.querySelector("#strength-bar"),
   strengthTrack: document.querySelector(".strength-track"),
   strengthFeedback: document.querySelector("#strength-feedback"),
+  strengthTips: document.querySelector("#strength-tips"),
   terminalLog: document.querySelector("#terminal-log"),
   clearLogButton: document.querySelector("#clear-log-button"),
   systemClock: document.querySelector("#system-clock"),
@@ -73,6 +82,9 @@ const elements = {
   missionReveal: document.querySelector("#mission-step-reveal"),
   scoreList: document.querySelector("#score-list"),
   clearScoresButton: document.querySelector("#clear-scores-button"),
+  reduceGlowButton: document.querySelector("#reduce-glow-button"),
+  bigControlsButton: document.querySelector("#big-controls-button"),
+  quietModeButton: document.querySelector("#quiet-mode-button"),
 };
 
 let currentPassword = "";
@@ -84,6 +96,23 @@ let expiryTimer = null;
 let bindingAction = null;
 const audio = new CyberAudio();
 const PASSWORD_TTL = 5 * 60 * 1000;
+const OFFICIAL_URL = "https://marcusguedess.github.io/netrunner-password-lab/";
+const TRAINING_MAP = [
+  "#####",
+  "#P.S#",
+  "#.#.#",
+  "#B.T#",
+  "#####",
+];
+
+const training = {
+  active: false,
+  won: false,
+  player: { x: 1, y: 1 },
+  shard: { x: 3, y: 1, collected: false },
+  bug: { x: 1, y: 3 },
+  terminal: { x: 3, y: 3 },
+};
 
 window.addEventListener("keydown", (event) => {
   if (event.key === "Tab") document.body.classList.add("keyboard-navigation");
@@ -178,6 +207,12 @@ function updateStrength(password) {
   elements.strengthLabel.style.color = analysis.color;
   elements.strengthFeedback.textContent = analysis.feedback;
   elements.strengthTrack.setAttribute("aria-valuenow", String(analysis.score));
+  elements.strengthTips.replaceChildren();
+  analysis.tips?.forEach((tip) => {
+    const item = document.createElement("li");
+    item.textContent = tip;
+    elements.strengthTips.append(item);
+  });
 }
 
 function setMission(stage) {
@@ -202,7 +237,7 @@ function lockPassword() {
   elements.passwordVault.classList.add("locked");
   elements.passwordOutput.value = maskPassword(currentPassword);
   elements.vaultStatus.textContent = "SENHA BLOQUEADA PELO ICE";
-  elements.vaultCipher.textContent = "CIFRA // ICE-256";
+  elements.vaultCipher.textContent = "BLOQUEIO // ICE ATIVO";
   elements.lockIcon.textContent = "◆";
   elements.vaultLed.style.background = "var(--red)";
   elements.vaultLed.style.boxShadow = "0 0 12px var(--red)";
@@ -223,8 +258,8 @@ function unlockPassword() {
   elements.passwordVault.classList.remove("locked");
   elements.passwordVault.classList.add("unlocked", "decrypting");
   elements.passwordOutput.value = currentPassword;
-  elements.vaultStatus.textContent = "SENHA DESCRIPTOGRAFADA";
-  elements.vaultCipher.textContent = "CIFRA // ROMPIDA";
+  elements.vaultStatus.textContent = "SENHA LIBERADA";
+  elements.vaultCipher.textContent = "BLOQUEIO // ROMPIDO";
   elements.lockIcon.textContent = "◇";
   elements.vaultLed.style.background = "var(--green)";
   elements.vaultLed.style.boxShadow = "0 0 12px var(--green)";
@@ -247,20 +282,20 @@ function togglePasswordVisibility() {
     ? "Ocultar novamente"
     : "Revelar novamente";
   elements.vaultStatus.textContent = passwordVisible
-    ? "SENHA DESCRIPTOGRAFADA"
-    : "SENHA DESCRIPTOGRAFADA // VISOR OCULTO";
+    ? "SENHA LIBERADA"
+    : "SENHA LIBERADA // VISOR OCULTO";
 }
 
-function clearPassword(reason = "credencial removida da memória") {
+function clearPassword(reason = "senha apagada da memória") {
   currentPassword = "";
   passwordUnlocked = false;
   passwordVisible = false;
   expiryAt = 0;
   if (expiryTimer) window.clearInterval(expiryTimer);
   expiryTimer = null;
-  elements.passwordOutput.value = "SEM_CARGA";
-  elements.vaultStatus.textContent = "CREDENCIAL EXPIRADA";
-  elements.vaultCipher.textContent = "CIFRA // MEMÓRIA LIMPA";
+  elements.passwordOutput.value = "SEM_SENHA";
+  elements.vaultStatus.textContent = "SENHA EXPIRADA";
+  elements.vaultCipher.textContent = "BLOQUEIO // MEMÓRIA LIMPA";
   elements.vaultLength.textContent = "00 BYTES";
   elements.copyButton.disabled = true;
   elements.hidePasswordButton.hidden = true;
@@ -278,7 +313,8 @@ function updateExpiryCountdown() {
   const minutes = Math.floor(remaining / 60000);
   const seconds = Math.floor((remaining % 60000) / 1000);
   elements.expiryCountdown.textContent = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-  if (remaining === 0) clearPassword("credencial expirada após inatividade");
+  elements.expiryNotice.classList.toggle("expiring", remaining <= 30000);
+  if (remaining === 0) clearPassword("senha apagada após inatividade");
 }
 
 function resetExpiryTimer() {
@@ -301,7 +337,7 @@ function generateEncryptedPassword() {
   } catch (error) {
     elements.configAlert.textContent = error.message;
     elements.configAlert.hidden = false;
-    addLog("geração abortada: selecione ao menos um protocolo", "warning");
+    addLog("geração abortada: selecione ao menos um tipo de caractere", "warning");
     return;
   }
 
@@ -314,12 +350,13 @@ function generateEncryptedPassword() {
   setMission("break");
   setOverlay(
     "CAMADA ICE DETECTADA",
-    "A carga está criptografada. Inicie o ICEbreaker e alcance o terminal para revelá-la.",
+    "A senha foi criada e está escondida. Clique em Iniciar ICEbreaker para liberá-la.",
     true,
   );
   addLog("senha gerada", "success");
   addLog("ICE detectado", "danger");
-  addLog("execute icebreaker.exe", "warning");
+  addLog("clique em iniciar icebreaker", "warning");
+  elements.startGameButton.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
 function fallbackCopy(text) {
@@ -422,7 +459,7 @@ function updateGameState(state) {
     elements.pauseGameButton.disabled = true;
     setOverlay(
       "ICE ESTILHAÇADO",
-      "Carga de credenciais descriptografada. O cofre está aberto.",
+      "Senha liberada. O cofre está aberto.",
       true,
     );
   }
@@ -525,7 +562,7 @@ const game = new IcebreakerGame(elements.canvas, {
       }),
     );
     addLog("ICE rompido", "success");
-    addLog("senha descriptografada", "success");
+    addLog("senha liberada", "success");
   },
 });
 
@@ -545,6 +582,131 @@ elements.restartGameButton.addEventListener("click", () =>
 );
 elements.pauseGameButton.addEventListener("click", () => game.togglePause());
 elements.pulseGameButton.addEventListener("click", () => game.activatePulse());
+
+async function copyOfficialLink() {
+  const text = OFFICIAL_URL;
+  try {
+    if (navigator.clipboard?.writeText && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+    } else if (!fallbackCopy(text)) {
+      throw new Error("Clipboard indisponível");
+    }
+    elements.shareLinkButton.textContent = "Link copiado";
+    addLog("link oficial copiado", "success");
+  } catch {
+    elements.shareLinkButton.textContent = "Copie no README";
+    addLog("não foi possível copiar o link oficial", "warning");
+  }
+  window.setTimeout(() => {
+    elements.shareLinkButton.textContent = "Copiar link oficial";
+  }, 1800);
+}
+
+elements.shareLinkButton.addEventListener("click", copyOfficialLink);
+
+function resetTraining(message = "Use WASD, setas ou os botões para pegar o fragmento e ir ao terminal.") {
+  training.active = false;
+  training.won = false;
+  training.player = { x: 1, y: 1 };
+  training.shard = { x: 3, y: 1, collected: false };
+  training.bug = { x: 1, y: 3 };
+  training.terminal = { x: 3, y: 3 };
+  elements.trainingMessage.textContent = message;
+  renderTraining();
+}
+
+function renderTraining() {
+  elements.trainingGrid.replaceChildren();
+  TRAINING_MAP.forEach((row, y) => {
+    [...row].forEach((cell, x) => {
+      const tile = document.createElement("span");
+      tile.className = "training-cell";
+      if (cell === "#") tile.classList.add("wall");
+      if (training.terminal.x === x && training.terminal.y === y) {
+        tile.classList.add("terminal");
+        tile.textContent = "▣";
+      }
+      if (!training.shard.collected && training.shard.x === x && training.shard.y === y) {
+        tile.classList.add("shard");
+        tile.textContent = "◆";
+      }
+      if (training.bug.x === x && training.bug.y === y) {
+        tile.classList.add("bug");
+        tile.textContent = "×";
+      }
+      if (training.player.x === x && training.player.y === y) {
+        tile.className = "training-cell runner";
+        tile.textContent = "●";
+      }
+      elements.trainingGrid.append(tile);
+    });
+  });
+}
+
+function moveTraining(direction) {
+  if (!training.active || training.won) return;
+  const next = {
+    x: training.player.x + direction.x,
+    y: training.player.y + direction.y,
+  };
+  if (TRAINING_MAP[next.y]?.[next.x] === "#") {
+    elements.trainingMessage.textContent = "Parede do cofre. Tente outro caminho.";
+    renderTraining();
+    return;
+  }
+  training.player = next;
+  if (training.player.x === training.bug.x && training.player.y === training.bug.y) {
+    resetTraining("O bug ICE te pegou. Bora de novo.");
+    training.active = true;
+    return;
+  }
+  if (training.player.x === training.shard.x && training.player.y === training.shard.y) {
+    training.shard.collected = true;
+    elements.trainingMessage.textContent = "Fragmento coletado. Agora vá ao terminal verde.";
+  }
+  if (training.player.x === training.terminal.x && training.player.y === training.terminal.y) {
+    if (!training.shard.collected) {
+      elements.trainingMessage.textContent = "Terminal bloqueado. Pegue o fragmento amarelo primeiro.";
+    } else {
+      training.won = true;
+      elements.trainingMessage.textContent = "Tutorial completo. Agora você já sabe a lógica do ICEbreaker.";
+    }
+  }
+  renderTraining();
+}
+
+elements.trainingStartButton.addEventListener("click", () => {
+  resetTraining();
+  training.active = true;
+  elements.trainingGrid.focus({ preventScroll: true });
+});
+elements.trainingResetButton.addEventListener("click", () => resetTraining("Treino reiniciado."));
+elements.trainingTouchControls.forEach((button) => {
+  button.addEventListener("click", () => {
+    const directions = {
+      up: { x: 0, y: -1 },
+      down: { x: 0, y: 1 },
+      left: { x: -1, y: 0 },
+      right: { x: 1, y: 0 },
+    };
+    moveTraining(directions[button.dataset.trainingDirection]);
+  });
+});
+elements.trainingGrid.addEventListener("keydown", (event) => {
+  const directions = {
+    ArrowUp: { x: 0, y: -1 },
+    KeyW: { x: 0, y: -1 },
+    ArrowDown: { x: 0, y: 1 },
+    KeyS: { x: 0, y: 1 },
+    ArrowLeft: { x: -1, y: 0 },
+    KeyA: { x: -1, y: 0 },
+    ArrowRight: { x: 1, y: 0 },
+    KeyD: { x: 1, y: 0 },
+  };
+  if (!directions[event.code]) return;
+  event.preventDefault();
+  moveTraining(directions[event.code]);
+});
 elements.touchControls.forEach((button) => {
   button.addEventListener("click", () => {
     const directions = {
@@ -600,17 +762,55 @@ document.querySelectorAll("button, .protocol-toggle").forEach((control) => {
   control.addEventListener("click", () => audio.play("click"));
 });
 
-elements.soundToggle.addEventListener("click", () => {
-  soundEnabled = !soundEnabled;
-  audio.setEnabled(soundEnabled);
-  elements.soundToggle.setAttribute("aria-pressed", String(!soundEnabled));
-  elements.soundLabel.textContent = soundEnabled ? "ÁUDIO ATIVO" : "ÁUDIO SILENCIADO";
-});
+async function setSoundEnabled(enabled, label = true) {
+  if (enabled) {
+    try {
+      await audio.initialize();
+    } catch {
+      soundEnabled = false;
+      elements.soundToggle.setAttribute("aria-pressed", "true");
+      elements.quietModeButton.setAttribute("aria-pressed", "true");
+      if (label) elements.soundLabel.textContent = "ÁUDIO INDISPONÍVEL";
+      return false;
+    }
+  }
+
+  soundEnabled = enabled;
+  audio.setEnabled(enabled);
+  elements.soundToggle.setAttribute("aria-pressed", String(!enabled));
+  elements.quietModeButton.setAttribute("aria-pressed", String(!enabled));
+  if (label) elements.soundLabel.textContent = enabled ? "ÁUDIO ATIVO" : "ÁUDIO SILENCIADO";
+  return true;
+}
+
+elements.soundToggle.addEventListener("click", () => setSoundEnabled(!soundEnabled));
 
 elements.comfortToggle.addEventListener("click", () => {
   const enabled = document.body.classList.toggle("comfort-mode");
   elements.comfortToggle.setAttribute("aria-pressed", String(enabled));
   addLog(enabled ? "modo conforto ativado" : "modo conforto desativado");
+});
+
+elements.liteToggle.addEventListener("click", () => {
+  const enabled = document.body.classList.toggle("lite-mode");
+  elements.liteToggle.setAttribute("aria-pressed", String(enabled));
+  if (enabled) setSoundEnabled(false);
+  addLog(enabled ? "modo leve ativado" : "modo leve desativado");
+});
+
+elements.reduceGlowButton.addEventListener("click", () => {
+  const enabled = document.body.classList.toggle("reduced-glow");
+  elements.reduceGlowButton.setAttribute("aria-pressed", String(enabled));
+});
+
+elements.bigControlsButton.addEventListener("click", () => {
+  const enabled = document.body.classList.toggle("big-controls");
+  elements.bigControlsButton.setAttribute("aria-pressed", String(enabled));
+});
+
+elements.quietModeButton.addEventListener("click", () => {
+  const enabled = elements.quietModeButton.getAttribute("aria-pressed") !== "true";
+  setSoundEnabled(!enabled);
 });
 
 [
@@ -623,18 +823,25 @@ elements.comfortToggle.addEventListener("click", () => {
   });
 });
 
-async function jackIn() {
+async function jackIn({ silent = false } = {}) {
   elements.jackInButton.disabled = true;
-  try {
-    await audio.initialize();
-    audio.play("jackIn");
-  } catch {
-    soundEnabled = false;
-    elements.soundLabel.textContent = "ÁUDIO INDISPONÍVEL";
+  elements.silentEntryButton.disabled = true;
+  if (silent) {
+    await setSoundEnabled(false);
+  } else {
+    try {
+      await audio.initialize();
+      audio.play("jackIn");
+    } catch {
+      soundEnabled = false;
+      elements.soundToggle.setAttribute("aria-pressed", "true");
+      elements.quietModeButton.setAttribute("aria-pressed", "true");
+      elements.soundLabel.textContent = "ÁUDIO INDISPONÍVEL";
+    }
   }
 
   const messages = [
-    ["MEM", "mapeando setores criptografados"],
+    ["MEM", "preparando o gerador de senhas"],
     ["ENLACE", "canal neural seguro estabelecido"],
     ["ICE", "assinaturas de contramedidas detectadas"],
     ["DECK", "forja de credenciais montada"],
@@ -659,6 +866,7 @@ async function jackIn() {
 }
 
 elements.jackInButton.addEventListener("click", jackIn);
+elements.silentEntryButton.addEventListener("click", () => jackIn({ silent: true }));
 
 ["pointerdown", "keydown"].forEach((eventName) => {
   document.addEventListener(eventName, resetExpiryTimer, { passive: true });
@@ -690,6 +898,7 @@ startCyberCity(elements.cityCanvas);
 startDataRain(elements.backgroundCanvas);
 setMission("generate");
 renderScores();
+resetTraining("Clique em Iniciar tutorial para ensaiar a rota.");
 
 if ("serviceWorker" in navigator && window.isSecureContext) {
   window.addEventListener("load", () => {

@@ -461,7 +461,7 @@ export class IcebreakerGame {
     this.stopEnemyTimer();
     this.stopClock();
     this.setState("won");
-    this.callbacks.onMessage?.("ICE rompido. Senha descriptografada.");
+    this.callbacks.onMessage?.("ICE rompido. Senha liberada.");
     this.callbacks.onWin?.(this.elapsedTime, this.score);
   }
 

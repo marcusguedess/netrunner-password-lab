@@ -16,7 +16,7 @@
     <meta property="og:title" content="Netrunner Password Lab" />
     <meta
       property="og:description"
-      content="Gere uma senha segura, quebre o ICE e revele a chave."
+      content="Gere uma senha segura, vença o ICEbreaker e copie a senha."
     />
     <meta property="og:type" content="website" />
     <meta
@@ -55,8 +55,16 @@
           <span id="boot-progress"></span>
         </div>
         <button class="jack-in-button" id="jack-in-button" type="button">
-          <span>CONECTAR</span>
+          <span>CONECTAR COM ÁUDIO</span>
           <small>Comece por aqui: abre o laboratório e libera o áudio</small>
+        </button>
+        <button
+          class="jack-in-button silent-entry-button"
+          id="silent-entry-button"
+          type="button"
+        >
+          <span>ENTRAR SEM ÁUDIO</span>
+          <small>Mesmo laboratório, zero synthwave no ambiente</small>
         </button>
         <p class="boot-footnote">
           Simulação original de cyberdeck // fones recomendados
@@ -75,7 +83,7 @@
           <p class="eyebrow">NÚCLEO // FORJA DE CREDENCIAIS</p>
           <h1 data-text="NETRUNNER PASSWORD LAB">NETRUNNER PASSWORD LAB</h1>
           <p class="subtitle">
-            Gere credenciais criptografadas. Quebre o ICE. Revele a chave.
+            Gere uma senha segura. Vença o ICEbreaker. Copie a senha.
           </p>
         </div>
         <div class="system-state">
@@ -100,6 +108,14 @@
         >
           MODO CONFORTO
         </button>
+        <button
+          class="lite-toggle"
+          id="lite-toggle"
+          type="button"
+          aria-pressed="false"
+        >
+          MODO LEVE
+        </button>
       </header>
 
       <details class="about-panel hud-panel">
@@ -114,7 +130,7 @@
           <p>
             O Netrunner Password Lab é um gerador de senhas com cara de
             minigame cyberpunk. Você cria uma senha, encara um desafio rápido e
-            só então copia a chave. É ferramenta, mas com neon no sangue.
+            só então copia a senha. É ferramenta, mas com neon no sangue.
           </p>
         </div>
         <div class="about-grid">
@@ -131,7 +147,7 @@
             <h2>O que faz</h2>
             <p>
               O laboratório cria uma senha forte no próprio navegador, mede sua
-              força e só mostra a credencial depois que você vence o ICEbreaker.
+              força e só mostra a senha depois que você vence o ICEbreaker.
               Nada vai para servidor; a parada rola no seu navegador.
             </p>
           </article>
@@ -158,11 +174,14 @@
         <div>
           <span class="panel-code">ROTA RÁPIDA // SEM PÂNICO</span>
           <h2 id="quick-start-title">Como começa?</h2>
+          <button class="link-copy-button" id="share-link-button" type="button">
+            Copiar link oficial
+          </button>
         </div>
         <ol>
           <li>
             <span>01</span>
-            <p>Clique em <strong>Gerar Senha Criptografada</strong>.</p>
+            <p>Clique em <strong>Gerar Senha Segura</strong>.</p>
           </li>
           <li>
             <span>02</span>
@@ -173,6 +192,45 @@
             <p>Pegue os 4 fragmentos, vá ao terminal e copie a senha.</p>
           </li>
         </ol>
+      </section>
+
+      <section class="training-section hud-panel" aria-labelledby="training-title">
+        <div class="training-copy">
+          <span class="panel-code">SIMULADOR // 10 SEGUNDOS</span>
+          <h2 id="training-title">Tutorial relâmpago</h2>
+          <p>
+            Treine o básico sem mexer na sua senha: pegue o fragmento amarelo e
+            encoste no terminal verde. Se cruzar com o bug ICE, reinicia.
+          </p>
+          <div class="training-actions">
+            <button class="action-button secondary-action" id="training-start-button" type="button">
+              Iniciar tutorial
+            </button>
+            <button class="action-button secondary-action" id="training-reset-button" type="button">
+              Reiniciar treino
+            </button>
+          </div>
+        </div>
+        <div class="training-console">
+          <div
+            class="training-grid"
+            id="training-grid"
+            role="application"
+            aria-label="Tutorial jogável. Use WASD, setas ou os botões de toque."
+            tabindex="0"
+          ></div>
+          <div class="training-touch" aria-label="Controles do tutorial">
+            <span></span>
+            <button type="button" data-training-direction="up" aria-label="Mover tutorial para cima">▲</button>
+            <span></span>
+            <button type="button" data-training-direction="left" aria-label="Mover tutorial para esquerda">◀</button>
+            <button type="button" data-training-direction="down" aria-label="Mover tutorial para baixo">▼</button>
+            <button type="button" data-training-direction="right" aria-label="Mover tutorial para direita">▶</button>
+          </div>
+          <p class="training-message" id="training-message" aria-live="polite">
+            Clique em Iniciar tutorial para ensaiar a rota.
+          </p>
+        </div>
       </section>
 
       <section
@@ -197,7 +255,7 @@
       <section class="mission-path hud-panel" aria-label="Fluxo de desbloqueio">
         <div class="mission-step active" id="mission-step-generate">
           <span>01</span><strong>GERAR</strong
-          ><small>Crie a carga segura</small>
+          ><small>Crie a senha</small>
         </div>
         <i aria-hidden="true">///</i>
         <div class="mission-step" id="mission-step-break">
@@ -207,7 +265,7 @@
         <i aria-hidden="true">///</i>
         <div class="mission-step" id="mission-step-reveal">
           <span>03</span><strong>REVELAR</strong
-          ><small>Copie a credencial</small>
+          ><small>Copie a senha</small>
         </div>
       </section>
 
@@ -229,8 +287,8 @@
         <article class="hud-panel config-panel">
           <div class="panel-heading">
             <div>
-              <span class="panel-code">NODE_01</span>
-              <h2>Forja de Credenciais</h2>
+              <span class="panel-code">NÓ_01</span>
+              <h2>Gerador de Senhas</h2>
             </div>
             <span class="decor-bracket" aria-hidden="true"
               >[ CONFIGURAÇÃO ]</span
@@ -239,7 +297,7 @@
 
           <div class="length-control">
             <div class="field-label">
-              <label for="password-length">Comprimento da chave</label>
+              <label for="password-length">Tamanho da senha</label>
               <output id="length-output" for="password-length">16</output>
             </div>
             <input
@@ -256,7 +314,7 @@
           </div>
 
           <fieldset class="option-grid">
-            <legend>Protocolos de caracteres</legend>
+            <legend>Tipos de caracteres</legend>
             <label class="protocol-toggle">
               <input id="include-uppercase" type="checkbox" checked />
               <span class="toggle-box" aria-hidden="true"></span>
@@ -285,7 +343,7 @@
             id="generate-button"
             type="button"
           >
-            <span>Gerar Senha Criptografada</span>
+            <span>Gerar Senha Segura</span>
             <span aria-hidden="true">↯</span>
           </button>
           <p class="unlock-rule">
@@ -298,15 +356,15 @@
         <article class="hud-panel vault-panel">
           <div class="panel-heading">
             <div>
-              <span class="panel-code">VAULT_7</span>
-              <h2>Carga Criptografada</h2>
+              <span class="panel-code">COFRE_7</span>
+              <h2>Senha Bloqueada</h2>
             </div>
             <span class="vault-led" aria-hidden="true"></span>
           </div>
 
           <div class="password-vault locked" id="password-vault">
             <div class="vault-status">
-              <span id="vault-status">AGUARDANDO GERAÇÃO DA CHAVE</span>
+              <span id="vault-status">AGUARDANDO GERAÇÃO DA SENHA</span>
               <span class="lock-icon" id="lock-icon" aria-hidden="true">◆</span>
             </div>
             <output
@@ -314,10 +372,10 @@
               id="password-output"
               aria-live="polite"
               aria-label="Senha gerada"
-              >SEM_CARGA</output
+              >SEM_SENHA</output
             >
             <div class="vault-meta">
-              <span id="vault-cipher">CIFRA // EM ESPERA</span>
+              <span id="vault-cipher">BLOQUEIO // EM ESPERA</span>
               <span id="vault-length">00 BYTES</span>
             </div>
           </div>
@@ -342,7 +400,7 @@
             </button>
           </div>
           <p class="expiry-notice" id="expiry-notice" hidden>
-            A credencial será removida da memória em
+            A senha será apagada da memória em
             <span id="expiry-countdown">05:00</span>.
           </p>
 
@@ -350,7 +408,7 @@
             <div class="strength-readout">
               <div>
                 <span class="panel-code" id="strength-title"
-                  >VARREDURA DE ENTROPIA</span
+                  >FORÇA DA SENHA</span
                 >
                 <strong id="strength-label">NÃO ANALISADA</strong>
               </div>
@@ -367,8 +425,9 @@
               <span id="strength-bar"></span>
             </div>
             <p id="strength-feedback">
-              Gere uma carga para iniciar a varredura de entropia.
+              Gere uma senha para calcular a força dela.
             </p>
+            <ul class="strength-tips" id="strength-tips"></ul>
           </section>
         </article>
 
@@ -393,7 +452,7 @@
             </p>
             <p>
               <time>00:00:00</time
-              ><span>&gt; módulo de entropia carregado</span>
+              ><span>&gt; cálculo de força da senha carregado</span>
             </p>
             <p>
               <time>00:00:00</time
@@ -587,7 +646,7 @@
               <span class="overlay-mark" aria-hidden="true">◇</span>
               <strong id="overlay-title">COFRE SELADO</strong>
               <p id="overlay-message">
-                Primeiro clique em Gerar Senha Criptografada. Depois este jogo
+                Primeiro clique em Gerar Senha Segura. Depois este jogo
                 libera o botão Iniciar ICEbreaker.
               </p>
             </div>
@@ -596,6 +655,31 @@
             ICEbreaker aguardando comando.
           </div>
           <p class="sr-only" id="game-status-detail" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <section
+        class="hud-panel accessibility-section"
+        aria-labelledby="accessibility-title"
+      >
+        <div>
+          <span class="panel-code">AJUSTES // TODO DECK É PESSOAL</span>
+          <h2 id="accessibility-title">Conforto e conexão</h2>
+          <p>
+            Se o celular estiver sofrendo, a rede estiver lenta ou o visual
+            cansar, esses modos deixam a experiência mais tranquila.
+          </p>
+        </div>
+        <div class="accessibility-actions">
+          <button class="action-button secondary-action" id="reduce-glow-button" type="button" aria-pressed="false">
+            Reduzir brilho
+          </button>
+          <button class="action-button secondary-action" id="big-controls-button" type="button" aria-pressed="false">
+            Controles maiores
+          </button>
+          <button class="action-button secondary-action" id="quiet-mode-button" type="button" aria-pressed="false">
+            Silenciar tudo
+          </button>
         </div>
       </section>
 
@@ -645,7 +729,7 @@
             <h3>Data shard</h3>
             <p>
               Fragmento compacto de informação. Aqui, cada shard contém parte da
-              chave necessária para romper o ICE.
+              senha bloqueada pelo ICE.
             </p>
           </article>
           <article>
@@ -680,7 +764,7 @@
       </section>
 
       <footer>
-        <span>NETRUNNER PASSWORD LAB // VERSÃO 2.0 RC2</span>
+        <span>NETRUNNER PASSWORD LAB // VERSÃO 2.0.0</span>
         <span class="marcus-signature"
           >Nemo esteve aqui // como esteve em Night City</span
         >

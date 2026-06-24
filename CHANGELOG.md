@@ -1,5 +1,15 @@
 # Histórico de versões
 
+## 2.0.0 — Onboarding final e publicação estável
+
+- Linguagem operacional revisada para pessoas leigas, mantendo o cyberpunk como atmosfera
+- Botão de entrada sem áudio, modo leve, brilho reduzido e controles maiores
+- Tutorial jogável curto para ensinar fragmento, terminal e bug ICE
+- Auto-scroll para o ICEbreaker depois de gerar a senha
+- Dicas simples para melhorar a força da senha
+- Link oficial copiável e 404 com orientação para a URL correta do GitHub Pages
+- Capturas do README atualizadas para a versão final
+
 ## 2.0.0-rc.2 — TRACE e clareza para primeiro acesso
 
 - Aba de primeiro contato com origem do projeto, explicação cyberpunk e termos para leigos

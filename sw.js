@@ -1,4 +1,4 @@
-const CACHE_NAME = "netrunner-lab-v2.0.0-rc.1";
+const CACHE_NAME = "netrunner-lab-v2.0.0";
 const APP_SHELL = [
   "./",
   "./index.html",

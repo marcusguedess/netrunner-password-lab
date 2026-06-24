@@ -56,7 +56,7 @@ export function generatePassword({ length, uppercase, lowercase, numbers, symbol
   ].filter(Boolean);
 
   if (selectedSets.length === 0) {
-    throw new Error("Selecione pelo menos um protocolo de caracteres.");
+    throw new Error("Selecione pelo menos um tipo de caractere.");
   }
 
   const safeLength = Math.min(32, Math.max(8, Number(length)));
@@ -79,7 +79,8 @@ export function analyzePassword(password) {
     return {
       score: 0,
       label: "Não analisada",
-      feedback: "Gere uma carga para iniciar a varredura de entropia.",
+      feedback: "Gere uma senha para calcular a força dela.",
+      tips: [],
       color: "#ff4d6d",
     };
   }
@@ -103,12 +104,23 @@ export function analyzePassword(password) {
   if (COMMON_PATTERNS.some((pattern) => normalized.includes(pattern))) score -= 22;
   if (new Set(password).size < Math.ceil(password.length * 0.55)) score -= 10;
   score = Math.max(0, score);
+  const tips = [];
+  if (password.length < 16) tips.push("Use pelo menos 16 caracteres quando puder.");
+  if (!/[A-Z]/.test(password) || !/[a-z]/.test(password)) {
+    tips.push("Misture letras maiúsculas e minúsculas.");
+  }
+  if (!/\d/.test(password)) tips.push("Adicione números para aumentar a variedade.");
+  if (!/[^A-Za-z0-9]/.test(password)) tips.push("Símbolos ajudam quando o site aceita.");
+  if (COMMON_PATTERNS.some((pattern) => normalized.includes(pattern))) {
+    tips.push("Evite palavras comuns como senha, admin ou sequências fáceis.");
+  }
 
   if (score < 35) {
     return {
       score,
       label: "Fraca",
-      feedback: "Baixa resistência. Aumente o comprimento e combine mais protocolos.",
+      feedback: "Senha fraca. Use mais caracteres e misture letras, números e símbolos.",
+      tips,
       color: "#ff4d6d",
     };
   }
@@ -117,7 +129,8 @@ export function analyzePassword(password) {
     return {
       score,
       label: "Média",
-      feedback: "Adequada para nós de baixo risco, mas recomenda-se mais entropia.",
+      feedback: "Senha ok para usos simples, mas ainda dá para deixar mais forte.",
+      tips,
       color: "#ffd166",
     };
   }
@@ -126,7 +139,8 @@ export function analyzePassword(password) {
     return {
       score,
       label: "Forte",
-      feedback: "Assinatura de alta entropia. Adequada para a maioria dos canais seguros.",
+      feedback: "Senha forte. Boa para a maioria dos usos do dia a dia.",
+      tips,
       color: "#5eeaff",
     };
   }
@@ -134,7 +148,8 @@ export function analyzePassword(password) {
   return {
     score,
     label: "Ultra",
-    feedback: "Carga de nível máximo. A malha de entropia apresenta alta resistência.",
+    feedback: "Senha muito forte. Comprimento e variedade estão em ótimo nível.",
+    tips,
     color: "#65ff9a",
   };
 }

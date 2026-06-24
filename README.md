@@ -16,7 +16,7 @@ Demonstração pública:
 
 ## Visão geral
 
-O Netrunner Password Lab transforma a geração de credenciais em uma pequena
+O Netrunner Password Lab transforma a geração de senhas em uma pequena
 infiltração digital. A senha é criada no navegador e imediatamente protegida
 por uma camada de ICE. Para revelar o conteúdo, o usuário precisa conduzir o
 netrunner pelo mapa, coletar quatro fragmentos de dados e alcançar o terminal
@@ -58,6 +58,7 @@ somente depois de uma ação do jogador.
 - Aleatoriedade segura com `crypto.getRandomValues`
 - Inclusão garantida de pelo menos um caractere de cada grupo selecionado
 - Análise de força com score, classificação e feedback
+- Dicas simples para melhorar senhas fracas ou médias
 - Senha mascarada até a conclusão do desafio
 - Minijogo em Canvas com movimentação em grade
 - Pixel-art procedural com cidade animada, sprites em Canvas e efeitos de HUD
@@ -76,6 +77,9 @@ somente depois de uma ação do jogador.
 - Três arquiteturas de cofre com comportamento e trilha próprios
 - Modo estratégico e remapeamento de controles por sessão
 - Aba de primeiro contato com origem, contexto cyberpunk e instruções rápidas
+- Entrada sem áudio, modo leve, brilho reduzido e controles maiores
+- Tutorial jogável curto antes do desafio principal
+- Página 404 com orientação para a URL correta do GitHub Pages
 - Glossário de termos cyberpunk
 - Expiração automática da credencial após inatividade
 - Ranking local apenas com metadados não sensíveis
@@ -251,6 +255,9 @@ e o terminal permanecem alcançáveis.
 
 ## Próximas melhorias
 
+- Comprimir imagens e capturas para reduzir ainda mais o peso inicial do site
+- Testar visualmente em Safari/iPhone real e ajustar qualquer diferença de
+  layout, áudio ou PWA
 - Criar uma campanha com narrativa entre os setores
 - Adicionar sprites desenhados quadro a quadro, substituindo parte das formas
   procedurais do Canvas
