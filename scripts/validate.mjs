@@ -9,6 +9,7 @@ const files = [
   "js/audio.js",
   "js/game.js",
   "js/password.js",
+  "js/progress.js",
   "js/scores.js",
   "js/visuals.js",
   "manifest.webmanifest",

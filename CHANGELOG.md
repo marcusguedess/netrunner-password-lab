@@ -1,5 +1,16 @@
 # Histórico de versões
 
+## 3.0.0 — Nightwire: experiência, utilidade e progressão
+
+- Nova arquitetura em quatro áreas: Forja, ICEbreaker, Cofre e Arquivo
+- Modo Operação Completa e modo Acesso Rápido para uso recorrente
+- Perfis de senha, exclusão de caracteres ambíguos e gerador de frases-senha
+- Navegação fixa, botões com estados táteis e transições cinematográficas
+- Desafio diário determinístico com dificuldade e meta de pontuação
+- Carreira local com vitórias, recordes, sequência e conquistas
+- Preferências locais sem persistir senhas ou outros dados sensíveis
+- Layout mobile reorganizado para reduzir rolagem e carga cognitiva
+
 ## 2.0.0 — Onboarding final e publicação estável
 
 - Linguagem operacional revisada para pessoas leigas, mantendo o cyberpunk como atmosfera

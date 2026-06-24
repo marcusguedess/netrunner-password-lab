@@ -1,6 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { analyzePassword, generatePassword, maskPassword } from "../js/password.js";
+import {
+  analyzePassword,
+  generatePassphrase,
+  generatePassword,
+  maskPassword,
+} from "../js/password.js";
 
 test("gera uma senha com o tamanho solicitado", () => {
   const password = generatePassword({
@@ -75,4 +80,31 @@ test("amostra de geração apresenta variedade", () => {
   }
 
   assert.ok(generated.size > 195);
+});
+
+test("pode excluir caracteres visualmente ambíguos", () => {
+  for (let index = 0; index < 40; index += 1) {
+    const password = generatePassword({
+      length: 32,
+      uppercase: true,
+      lowercase: true,
+      numbers: true,
+      symbols: false,
+      excludeAmbiguous: true,
+    });
+    assert.doesNotMatch(password, /[Il1O0o]/);
+  }
+});
+
+test("gera frase-senha com palavras, separador e número", () => {
+  const passphrase = generatePassphrase({
+    words: 5,
+    separator: "-",
+    capitalize: true,
+    includeNumber: true,
+  });
+  const parts = passphrase.split("-");
+  assert.equal(parts.length, 6);
+  assert.ok(parts.some((part) => /^\d{2}$/.test(part)));
+  assert.ok(parts.filter((part) => !/^\d+$/.test(part)).every((part) => /^[A-ZÁÉÍÓÚÂÊÔÃÕÇ]/.test(part)));
 });

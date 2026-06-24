@@ -1,7 +1,7 @@
 {
   "name": "Netrunner Password Lab",
   "short_name": "Netrunner Lab",
-  "description": "Laboratório cyberpunk de senhas com gerador seguro e ICEbreaker.",
+  "description": "Cyberdeck autoral para gerar senhas, criar frases-senha e romper o ICEbreaker.",
   "lang": "pt-BR",
   "start_url": "./",
   "scope": "./",

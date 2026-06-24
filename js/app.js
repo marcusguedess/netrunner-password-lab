@@ -1,8 +1,14 @@
-import { analyzePassword, generatePassword, maskPassword } from "./password.js";
+import {
+  analyzePassword,
+  generatePassphrase,
+  generatePassword,
+  maskPassword,
+} from "./password.js";
 import { IcebreakerGame } from "./game.js";
 import { CyberAudio } from "./audio.js";
 import { startCyberCity, startDataRain } from "./visuals.js";
 import { clearScores, readScores, saveScore } from "./scores.js";
+import { dailyChallenge, readProgress, recordRun } from "./progress.js";
 
 const elements = {
   bootScreen: document.querySelector("#boot-screen"),
@@ -31,6 +37,7 @@ const elements = {
   lowercase: document.querySelector("#include-lowercase"),
   numbers: document.querySelector("#include-numbers"),
   symbols: document.querySelector("#include-symbols"),
+  excludeAmbiguous: document.querySelector("#exclude-ambiguous"),
   configAlert: document.querySelector("#config-alert"),
   generateButton: document.querySelector("#generate-button"),
   passwordVault: document.querySelector("#password-vault"),
@@ -85,6 +92,28 @@ const elements = {
   reduceGlowButton: document.querySelector("#reduce-glow-button"),
   bigControlsButton: document.querySelector("#big-controls-button"),
   quietModeButton: document.querySelector("#quiet-mode-button"),
+  shell: document.querySelector("#main-content"),
+  zoneButtons: document.querySelectorAll("[data-zone-target]"),
+  operationFull: document.querySelector("#operation-full"),
+  operationQuick: document.querySelector("#operation-quick"),
+  randomModeButton: document.querySelector("#random-mode-button"),
+  passphraseModeButton: document.querySelector("#passphrase-mode-button"),
+  profileButtons: document.querySelectorAll("[data-profile]"),
+  passphraseOptions: document.querySelector("#passphrase-options"),
+  passphraseWords: document.querySelector("#passphrase-words"),
+  passphraseSeparator: document.querySelector("#passphrase-separator"),
+  passphraseCapitalize: document.querySelector("#passphrase-capitalize"),
+  passphraseNumber: document.querySelector("#passphrase-number"),
+  dailyDescription: document.querySelector("#daily-description"),
+  dailyTargetScore: document.querySelector("#daily-target-score"),
+  dailyActivateButton: document.querySelector("#daily-activate-button"),
+  careerRank: document.querySelector("#career-rank"),
+  careerWins: document.querySelector("#career-wins"),
+  careerScore: document.querySelector("#career-score"),
+  careerTime: document.querySelector("#career-time"),
+  careerStreak: document.querySelector("#career-streak"),
+  achievementGrid: document.querySelector("#achievement-grid"),
+  actionFeedback: document.querySelector("#action-feedback"),
 };
 
 let currentPassword = "";
@@ -94,9 +123,20 @@ let soundEnabled = true;
 let expiryAt = 0;
 let expiryTimer = null;
 let bindingAction = null;
+let operationMode = "full";
+let generatorMode = "random";
+let activeZone = "forge";
+let feedbackTimer = null;
 const audio = new CyberAudio();
 const PASSWORD_TTL = 5 * 60 * 1000;
 const OFFICIAL_URL = "https://marcusguedess.github.io/netrunner-password-lab/";
+const PREFERENCES_KEY = "netrunner:preferences:v1";
+const PROFILE_OPTIONS = {
+  daily: { length: 16, uppercase: true, lowercase: true, numbers: true, symbols: true },
+  bank: { length: 24, uppercase: true, lowercase: true, numbers: true, symbols: true },
+  wifi: { length: 20, uppercase: true, lowercase: true, numbers: true, symbols: false },
+  maximum: { length: 32, uppercase: true, lowercase: true, numbers: true, symbols: true },
+};
 const TRAINING_MAP = [
   "#####",
   "#P.S#",
@@ -130,6 +170,153 @@ function timestamp() {
     second: "2-digit",
     hour12: false,
   }).format(new Date());
+}
+
+function notify(message, tone = "info") {
+  window.clearTimeout(feedbackTimer);
+  elements.actionFeedback.textContent = message;
+  elements.actionFeedback.dataset.tone = tone;
+  elements.actionFeedback.classList.add("visible");
+  feedbackTimer = window.setTimeout(() => {
+    elements.actionFeedback.classList.remove("visible");
+  }, 2200);
+}
+
+function setZone(zone, { focus = false, announce = true } = {}) {
+  const allowed = new Set(["forge", "breaker", "vault", "archive"]);
+  activeZone = allowed.has(zone) ? zone : "forge";
+  elements.shell.dataset.activeZone = activeZone;
+  elements.zoneButtons.forEach((button) => {
+    const selected = button.dataset.zoneTarget === activeZone;
+    button.classList.toggle("active", selected);
+    if (selected) button.setAttribute("aria-current", "page");
+    else button.removeAttribute("aria-current");
+  });
+  if (focus) {
+    const target = document.querySelector(
+      activeZone === "vault"
+        ? "[data-panel-zone='vault']"
+        : `[data-zone='${activeZone}']`,
+    );
+    target?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  const labels = {
+    forge: "Forja aberta.",
+    breaker: "ICEbreaker aberto.",
+    vault: "Cofre aberto.",
+    archive: "Arquivo de bordo aberto.",
+  };
+  if (announce) notify(labels[activeZone]);
+}
+
+function savePreferences() {
+  const preferences = {
+    operationMode,
+    generatorMode,
+    length: Number(elements.length.value),
+    uppercase: elements.uppercase.checked,
+    lowercase: elements.lowercase.checked,
+    numbers: elements.numbers.checked,
+    symbols: elements.symbols.checked,
+    excludeAmbiguous: elements.excludeAmbiguous.checked,
+    difficulty: elements.difficulty.value,
+    strategicMode: elements.strategicMode.checked,
+  };
+  try {
+    localStorage.setItem(PREFERENCES_KEY, JSON.stringify(preferences));
+  } catch {
+    // Preferências são opcionais; nenhuma senha é persistida.
+  }
+}
+
+function setOperationMode(mode, { announce = true } = {}) {
+  operationMode = mode === "quick" ? "quick" : "full";
+  const quick = operationMode === "quick";
+  elements.operationFull.classList.toggle("active", !quick);
+  elements.operationQuick.classList.toggle("active", quick);
+  elements.operationFull.setAttribute("aria-pressed", String(!quick));
+  elements.operationQuick.setAttribute("aria-pressed", String(quick));
+  elements.generateButton.querySelector("span").textContent = quick
+    ? "Gerar e Liberar Senha"
+    : "Gerar Senha Segura";
+  savePreferences();
+  if (announce) notify(quick ? "Acesso rápido ativado." : "Operação completa ativada.");
+}
+
+function setGeneratorMode(mode, { announce = true } = {}) {
+  generatorMode = mode === "passphrase" ? "passphrase" : "random";
+  const passphrase = generatorMode === "passphrase";
+  elements.randomModeButton.classList.toggle("active", !passphrase);
+  elements.passphraseModeButton.classList.toggle("active", passphrase);
+  elements.randomModeButton.setAttribute("aria-selected", String(!passphrase));
+  elements.passphraseModeButton.setAttribute("aria-selected", String(passphrase));
+  elements.passphraseOptions.hidden = !passphrase;
+  document.querySelector(".length-control").hidden = passphrase;
+  document.querySelector(".option-grid").hidden = passphrase;
+  document.querySelector(".ambiguity-toggle").hidden = passphrase;
+  savePreferences();
+  if (announce) {
+    notify(passphrase ? "Gerador de frase-senha ativado." : "Gerador aleatório ativado.");
+  }
+}
+
+function applyProfile(name) {
+  const profile = PROFILE_OPTIONS[name];
+  if (!profile) return;
+  Object.assign(elements.length, { value: String(profile.length) });
+  elements.uppercase.checked = profile.uppercase;
+  elements.lowercase.checked = profile.lowercase;
+  elements.numbers.checked = profile.numbers;
+  elements.symbols.checked = profile.symbols;
+  setGeneratorMode("random");
+  elements.profileButtons.forEach((button) => {
+    button.classList.toggle("active", button.dataset.profile === name);
+  });
+  updateRange();
+  savePreferences();
+  addLog(`perfil carregado: ${name}`, "success");
+  notify(`Perfil ${name} carregado.`, "success");
+}
+
+function formatElapsed(milliseconds) {
+  if (!Number.isFinite(milliseconds)) return "--:--";
+  const seconds = Math.floor(milliseconds / 1000);
+  return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
+}
+
+function renderProgress(progress = readProgress()) {
+  const ranks = [
+    [20, "LENDA DA MALHA"],
+    [10, "ESPECTRO"],
+    [5, "NETRUNNER"],
+    [1, "OPERADOR"],
+    [0, "RECRUTA"],
+  ];
+  elements.careerRank.textContent = ranks.find(([wins]) => progress.wins >= wins)[1];
+  elements.careerWins.textContent = String(progress.wins);
+  elements.careerScore.textContent = String(progress.bestScore).padStart(4, "0");
+  elements.careerTime.textContent = formatElapsed(progress.bestTime);
+  elements.careerStreak.textContent = `${progress.streak} ${progress.streak === 1 ? "DIA" : "DIAS"}`;
+  elements.achievementGrid.replaceChildren();
+  const achievements = progress.achievements.length
+    ? progress.achievements
+    : ["Conclua sua primeira incursão para desbloquear uma conquista."];
+  achievements.forEach((name, index) => {
+    const badge = document.createElement("span");
+    badge.className = progress.achievements.length ? "achievement unlocked" : "achievement";
+    badge.textContent = progress.achievements.length ? `◆ ${name}` : name;
+    badge.style.setProperty("--badge-delay", `${index * 70}ms`);
+    elements.achievementGrid.append(badge);
+  });
+}
+
+function renderDaily() {
+  const contract = dailyChallenge();
+  const labels = { rookie: "Operador", runner: "Netrunner", legend: "Lenda Urbana" };
+  elements.dailyDescription.textContent =
+    `${labels[contract.difficulty]} // ${contract.strategicMode ? "modo estratégico" : "tempo real"} // ` +
+    `alcance ${contract.targetScore} pontos.`;
+  elements.dailyTargetScore.textContent = String(contract.targetScore);
 }
 
 function renderScores(scores = readScores()) {
@@ -189,12 +376,23 @@ function updateRange() {
 }
 
 function selectedOptions() {
+  if (generatorMode === "passphrase") {
+    return {
+      mode: "passphrase",
+      words: Number(elements.passphraseWords.value),
+      separator: elements.passphraseSeparator.value,
+      capitalize: elements.passphraseCapitalize.checked,
+      includeNumber: elements.passphraseNumber.checked,
+    };
+  }
   return {
+    mode: "random",
     length: Number(elements.length.value),
     uppercase: elements.uppercase.checked,
     lowercase: elements.lowercase.checked,
     numbers: elements.numbers.checked,
     symbols: elements.symbols.checked,
+    excludeAmbiguous: elements.excludeAmbiguous.checked,
   };
 }
 
@@ -242,9 +440,11 @@ function lockPassword() {
   elements.vaultLed.style.background = "var(--red)";
   elements.vaultLed.style.boxShadow = "0 0 12px var(--red)";
   elements.copyButton.disabled = true;
+  elements.copyButton.title = "Vença o ICEbreaker para liberar a cópia.";
   elements.copyLabel.textContent = "Copiar Senha";
   elements.hidePasswordButton.hidden = true;
   elements.expiryNotice.hidden = true;
+  elements.shell.classList.remove("vault-breached");
   expiryAt = 0;
   if (expiryTimer) window.clearInterval(expiryTimer);
   expiryTimer = null;
@@ -264,11 +464,15 @@ function unlockPassword() {
   elements.vaultLed.style.background = "var(--green)";
   elements.vaultLed.style.boxShadow = "0 0 12px var(--green)";
   elements.copyButton.disabled = false;
+  elements.copyButton.title = "Copiar a senha liberada.";
   elements.hidePasswordButton.hidden = false;
   elements.hidePasswordButton.textContent = "Ocultar novamente";
   elements.expiryNotice.hidden = false;
   resetExpiryTimer();
   setMission("reveal");
+  setZone("vault", { focus: true });
+  elements.shell.classList.add("vault-breached");
+  window.setTimeout(() => elements.shell.classList.remove("vault-breached"), 1200);
   window.setTimeout(() => elements.passwordVault.classList.remove("decrypting"), 800);
 }
 
@@ -333,7 +537,9 @@ function generateEncryptedPassword() {
   expiryTimer = null;
 
   try {
-    currentPassword = generatePassword(selectedOptions());
+    const options = selectedOptions();
+    currentPassword =
+      options.mode === "passphrase" ? generatePassphrase(options) : generatePassword(options);
   } catch (error) {
     elements.configAlert.textContent = error.message;
     elements.configAlert.hidden = false;
@@ -342,9 +548,22 @@ function generateEncryptedPassword() {
   }
 
   lockPassword();
+  elements.shell.classList.add("generation-sequence");
+  window.setTimeout(() => elements.shell.classList.remove("generation-sequence"), 1000);
   audio.play("generate");
   updateStrength(currentPassword);
   elements.vaultLength.textContent = `${String(currentPassword.length).padStart(2, "0")} BYTES`;
+  addLog("senha gerada", "success");
+  notify("Senha criada com segurança no navegador.", "success");
+  savePreferences();
+
+  if (operationMode === "quick") {
+    game.arm();
+    unlockPassword();
+    addLog("acesso rápido autorizado", "success");
+    return;
+  }
+
   elements.startGameButton.disabled = false;
   game.arm();
   setMission("break");
@@ -353,10 +572,9 @@ function generateEncryptedPassword() {
     "A senha foi criada e está escondida. Clique em Iniciar ICEbreaker para liberá-la.",
     true,
   );
-  addLog("senha gerada", "success");
   addLog("ICE detectado", "danger");
   addLog("clique em iniciar icebreaker", "warning");
-  elements.startGameButton.scrollIntoView({ behavior: "smooth", block: "center" });
+  window.setTimeout(() => setZone("breaker", { focus: true }), 540);
 }
 
 function fallbackCopy(text) {
@@ -388,11 +606,13 @@ async function copyPassword() {
     audio.play("copy");
     elements.copyLabel.textContent = "Copiada para a Área de Transferência";
     addLog("senha copiada para a área de transferência", "success");
+    notify("Senha copiada.", "success");
     window.setTimeout(() => {
       elements.copyLabel.textContent = "Copiar Senha";
     }, 1800);
   } catch {
     addLog("acesso à área de transferência negado pelo navegador", "danger");
+    notify("O navegador bloqueou a cópia.", "danger");
   }
 }
 
@@ -432,6 +652,13 @@ function updateGameState(state) {
   elements.startGameButton.disabled = state === "countdown";
   elements.restartGameButton.disabled = state === "countdown";
   updatePulse(Number.parseInt(elements.pulseCount.textContent, 10) || 0, false);
+  elements.startGameButton.title = currentPassword
+    ? "Iniciar ou reiniciar a incursão."
+    : "Gere uma senha na Forja para habilitar.";
+  elements.pauseGameButton.title =
+    state === "running" || state === "paused"
+      ? "Pausar ou retomar a incursão."
+      : "Disponível durante uma incursão.";
 
   if (state === "running") {
     setOverlay("", "", false);
@@ -478,6 +705,10 @@ function updatePulse(charges, active = false) {
   elements.pulseCount.textContent = active ? `${value} // ATIVO` : String(value);
   elements.pulseGameButton.disabled = game.state !== "running" || value === 0 || active;
   elements.pulseGameButton.classList.toggle("active", active);
+  elements.pulseGameButton.title =
+    value > 0
+      ? "Congela temporariamente os bugs ICE e reduz o TRACE."
+      : "Colete um fragmento para carregar um Pulso Fantasma.";
 }
 
 const game = new IcebreakerGame(elements.canvas, {
@@ -538,12 +769,28 @@ const game = new IcebreakerGame(elements.canvas, {
     document.body.classList.add("danger-flash");
     window.setTimeout(() => document.body.classList.remove("danger-flash"), 500);
     addLog("ruptura pelo ICE detectada: reinicialização necessária", "danger");
+    renderProgress(
+      recordRun({
+        won: false,
+        score: game.score,
+        elapsed: game.elapsedTime,
+        shards: game.collectedShardCount,
+      }),
+    );
   },
   onTraceBurn: () => {
     audio.play("lose");
     document.body.classList.add("danger-flash");
     window.setTimeout(() => document.body.classList.remove("danger-flash"), 500);
     addLog("trace saturado: enlace triangulado pela rede", "danger");
+    renderProgress(
+      recordRun({
+        won: false,
+        score: game.score,
+        elapsed: game.elapsedTime,
+        shards: game.collectedShardCount,
+      }),
+    );
   },
   onWin: (elapsed, score) => {
     const totalSeconds = Math.floor(elapsed / 1000);
@@ -561,6 +808,14 @@ const game = new IcebreakerGame(elements.canvas, {
         date: new Intl.DateTimeFormat("pt-BR").format(new Date()),
       }),
     );
+    renderProgress(
+      recordRun({
+        won: true,
+        elapsed,
+        score,
+        shards: game.collectedShardCount,
+      }),
+    );
     addLog("ICE rompido", "success");
     addLog("senha liberada", "success");
   },
@@ -570,6 +825,43 @@ elements.length.addEventListener("input", updateRange);
 elements.generateButton.addEventListener("click", generateEncryptedPassword);
 elements.copyButton.addEventListener("click", copyPassword);
 elements.hidePasswordButton.addEventListener("click", togglePasswordVisibility);
+elements.zoneButtons.forEach((button) => {
+  button.addEventListener("click", () => setZone(button.dataset.zoneTarget, { focus: true }));
+});
+elements.operationFull.addEventListener("click", () => setOperationMode("full"));
+elements.operationQuick.addEventListener("click", () => setOperationMode("quick"));
+elements.randomModeButton.addEventListener("click", () => setGeneratorMode("random"));
+elements.passphraseModeButton.addEventListener("click", () => setGeneratorMode("passphrase"));
+elements.profileButtons.forEach((button) => {
+  button.addEventListener("click", () => applyProfile(button.dataset.profile));
+});
+[
+  elements.uppercase,
+  elements.lowercase,
+  elements.numbers,
+  elements.symbols,
+  elements.excludeAmbiguous,
+  elements.passphraseWords,
+  elements.passphraseSeparator,
+  elements.passphraseCapitalize,
+  elements.passphraseNumber,
+  elements.difficulty,
+  elements.strategicMode,
+].forEach((control) => control.addEventListener("change", savePreferences));
+
+elements.dailyActivateButton.addEventListener("click", () => {
+  const contract = dailyChallenge();
+  elements.difficulty.value = contract.difficulty;
+  elements.strategicMode.checked = contract.strategicMode;
+  elements.dailyActivateButton.textContent = "Contrato carregado";
+  savePreferences();
+  addLog(`desafio diário carregado: ${contract.key}`, "success");
+  notify("Contrato diário carregado.", "success");
+  window.setTimeout(() => {
+    elements.dailyActivateButton.textContent = "Carregar contrato";
+  }, 1800);
+});
+
 function gameOptions() {
   return { strategicMode: elements.strategicMode.checked };
 }
@@ -679,8 +971,12 @@ elements.trainingStartButton.addEventListener("click", () => {
   resetTraining();
   training.active = true;
   elements.trainingGrid.focus({ preventScroll: true });
+  notify("Tutorial iniciado. Use as setas ou WASD.");
 });
-elements.trainingResetButton.addEventListener("click", () => resetTraining("Treino reiniciado."));
+elements.trainingResetButton.addEventListener("click", () => {
+  resetTraining("Treino reiniciado.");
+  notify("Tutorial reiniciado.");
+});
 elements.trainingTouchControls.forEach((button) => {
   button.addEventListener("click", () => {
     const directions = {
@@ -750,11 +1046,13 @@ window.addEventListener("keydown", (event) => {
 elements.clearLogButton.addEventListener("click", () => {
   elements.terminalLog.replaceChildren();
   addLog("buffer do terminal limpo");
+  notify("Terminal limpo.");
 });
 elements.clearScoresButton.addEventListener("click", () => {
   clearScores();
   renderScores([]);
   addLog("registro local de pontuações removido");
+  notify("Registro local removido.");
 });
 
 document.querySelectorAll("button, .protocol-toggle").forEach((control) => {
@@ -789,6 +1087,7 @@ elements.comfortToggle.addEventListener("click", () => {
   const enabled = document.body.classList.toggle("comfort-mode");
   elements.comfortToggle.setAttribute("aria-pressed", String(enabled));
   addLog(enabled ? "modo conforto ativado" : "modo conforto desativado");
+  notify(enabled ? "Modo conforto ativado." : "Modo conforto desativado.");
 });
 
 elements.liteToggle.addEventListener("click", () => {
@@ -796,21 +1095,25 @@ elements.liteToggle.addEventListener("click", () => {
   elements.liteToggle.setAttribute("aria-pressed", String(enabled));
   if (enabled) setSoundEnabled(false);
   addLog(enabled ? "modo leve ativado" : "modo leve desativado");
+  notify(enabled ? "Modo leve ativado." : "Modo leve desativado.");
 });
 
 elements.reduceGlowButton.addEventListener("click", () => {
   const enabled = document.body.classList.toggle("reduced-glow");
   elements.reduceGlowButton.setAttribute("aria-pressed", String(enabled));
+  notify(enabled ? "Brilho reduzido." : "Brilho restaurado.");
 });
 
 elements.bigControlsButton.addEventListener("click", () => {
   const enabled = document.body.classList.toggle("big-controls");
   elements.bigControlsButton.setAttribute("aria-pressed", String(enabled));
+  notify(enabled ? "Controles ampliados." : "Controles restaurados.");
 });
 
 elements.quietModeButton.addEventListener("click", () => {
   const enabled = elements.quietModeButton.getAttribute("aria-pressed") !== "true";
   setSoundEnabled(!enabled);
+  notify(enabled ? "Todo o áudio foi silenciado." : "Áudio reativado.");
 });
 
 [
@@ -892,12 +1195,34 @@ window.setInterval(() => {
   elements.systemClock.textContent = timestamp();
 }, 1000);
 
+try {
+  const preferences = JSON.parse(localStorage.getItem(PREFERENCES_KEY) || "{}");
+  if (Number.isFinite(preferences.length)) {
+    elements.length.value = String(Math.min(32, Math.max(8, preferences.length)));
+  }
+  for (const key of ["uppercase", "lowercase", "numbers", "symbols", "excludeAmbiguous"]) {
+    if (typeof preferences[key] === "boolean") elements[key].checked = preferences[key];
+  }
+  if (["rookie", "runner", "legend"].includes(preferences.difficulty)) {
+    elements.difficulty.value = preferences.difficulty;
+  }
+  elements.strategicMode.checked = Boolean(preferences.strategicMode);
+  setOperationMode(preferences.operationMode, { announce: false });
+  setGeneratorMode(preferences.generatorMode, { announce: false });
+} catch {
+  setOperationMode("full", { announce: false });
+  setGeneratorMode("random", { announce: false });
+}
+
 updateRange();
 elements.systemClock.textContent = timestamp();
 startCyberCity(elements.cityCanvas);
 startDataRain(elements.backgroundCanvas);
 setMission("generate");
+setZone("forge", { announce: false });
 renderScores();
+renderProgress();
+renderDaily();
 resetTraining("Clique em Iniciar tutorial para ensaiar a rota.");
 
 if ("serviceWorker" in navigator && window.isSecureContext) {

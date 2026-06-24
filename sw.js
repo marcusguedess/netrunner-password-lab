@@ -1,4 +1,4 @@
-const CACHE_NAME = "netrunner-lab-v2.0.0";
+const CACHE_NAME = "netrunner-lab-v3.0.0";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -9,6 +9,7 @@ const APP_SHELL = [
   "./js/audio.js",
   "./js/game.js",
   "./js/password.js",
+  "./js/progress.js",
   "./js/scores.js",
   "./js/visuals.js",
   "./assets/favicon.svg",

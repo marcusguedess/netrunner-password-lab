@@ -77,7 +77,7 @@
     <div class="ambient-grid" aria-hidden="true"></div>
     <div class="scanlines" aria-hidden="true"></div>
 
-    <main class="shell" id="main-content">
+    <main class="shell" id="main-content" data-active-zone="forge">
       <header class="site-header hud-panel">
         <div>
           <p class="eyebrow">NÚCLEO // FORJA DE CREDENCIAIS</p>
@@ -118,7 +118,45 @@
         </button>
       </header>
 
-      <details class="about-panel hud-panel">
+      <nav class="command-dock" aria-label="Áreas do cyberdeck">
+        <button class="command-tab active" type="button" data-zone-target="forge" aria-current="page">
+          <span>01</span><strong>FORJA</strong><small>Criar</small>
+        </button>
+        <button class="command-tab" type="button" data-zone-target="breaker">
+          <span>02</span><strong>ICEBREAKER</strong><small>Invadir</small>
+        </button>
+        <button class="command-tab" type="button" data-zone-target="vault">
+          <span>03</span><strong>COFRE</strong><small>Usar</small>
+        </button>
+        <button class="command-tab" type="button" data-zone-target="archive">
+          <span>04</span><strong>ARQUIVO</strong><small>Aprender</small>
+        </button>
+      </nav>
+
+      <section class="command-hero hud-panel" data-zone="forge" aria-labelledby="command-title">
+        <div class="command-copy">
+          <span class="panel-code">OPERAÇÃO // NIGHTWIRE 3.0</span>
+          <h2 id="command-title">Uma senha. Uma invasão. Um cofre.</h2>
+          <p>
+            Escolha a missão: conclua o ICEbreaker para a experiência completa
+            ou use o acesso rápido quando só precisar de uma senha agora.
+          </p>
+        </div>
+        <div class="operation-selector" role="group" aria-label="Modo da operação">
+          <button class="operation-card active" id="operation-full" type="button" aria-pressed="true">
+            <span>EXPERIÊNCIA</span>
+            <strong>Operação completa</strong>
+            <small>Gerar → invadir → liberar</small>
+          </button>
+          <button class="operation-card" id="operation-quick" type="button" aria-pressed="false">
+            <span>UTILIDADE</span>
+            <strong>Acesso rápido</strong>
+            <small>Gerar e copiar sem missão</small>
+          </button>
+        </div>
+      </section>
+
+      <details class="about-panel hud-panel" data-zone="archive">
         <summary>
           <span class="about-mark" aria-hidden="true">?</span>
           <span>
@@ -170,7 +208,7 @@
         </div>
       </details>
 
-      <section class="quick-start hud-panel" aria-labelledby="quick-start-title">
+      <section class="quick-start hud-panel" data-zone="forge" aria-labelledby="quick-start-title">
         <div>
           <span class="panel-code">ROTA RÁPIDA // SEM PÂNICO</span>
           <h2 id="quick-start-title">Como começa?</h2>
@@ -194,7 +232,7 @@
         </ol>
       </section>
 
-      <section class="training-section hud-panel" aria-labelledby="training-title">
+      <section class="training-section hud-panel" data-zone="archive" aria-labelledby="training-title">
         <div class="training-copy">
           <span class="panel-code">SIMULADOR // 10 SEGUNDOS</span>
           <h2 id="training-title">Tutorial relâmpago</h2>
@@ -235,6 +273,7 @@
 
       <section
         class="audio-mixer hud-panel"
+        data-zone="archive"
         aria-label="Mixer de áudio do cyberdeck"
       >
         <span class="panel-code">MIXER // NIGHTWAVE</span>
@@ -252,7 +291,7 @@
         /></label>
       </section>
 
-      <section class="mission-path hud-panel" aria-label="Fluxo de desbloqueio">
+      <section class="mission-path hud-panel" data-zone="shared" aria-label="Fluxo de desbloqueio">
         <div class="mission-step active" id="mission-step-generate">
           <span>01</span><strong>GERAR</strong
           ><small>Crie a senha</small>
@@ -269,7 +308,7 @@
         </div>
       </section>
 
-      <section class="operator-brief hud-panel" aria-label="Resumo de funcionamento">
+      <section class="operator-brief hud-panel" data-zone="forge" aria-label="Resumo de funcionamento">
         <span class="panel-code">BRIEFING // PARA PRIMEIRO ACESSO</span>
         <div>
           <p>
@@ -284,7 +323,7 @@
       </section>
 
       <section class="dashboard" aria-label="Laboratório de senha">
-        <article class="hud-panel config-panel">
+        <article class="hud-panel config-panel" data-panel-zone="forge">
           <div class="panel-heading">
             <div>
               <span class="panel-code">NÓ_01</span>
@@ -293,6 +332,22 @@
             <span class="decor-bracket" aria-hidden="true"
               >[ CONFIGURAÇÃO ]</span
             >
+          </div>
+
+          <div class="generator-modes" role="tablist" aria-label="Tipo de senha">
+            <button class="generator-mode active" id="random-mode-button" type="button" role="tab" aria-selected="true">
+              Senha aleatória
+            </button>
+            <button class="generator-mode" id="passphrase-mode-button" type="button" role="tab" aria-selected="false">
+              Frase-senha
+            </button>
+          </div>
+
+          <div class="profile-grid" aria-label="Perfis recomendados">
+            <button type="button" data-profile="daily"><strong>Uso diário</strong><small>16 caracteres</small></button>
+            <button type="button" data-profile="bank"><strong>Banco</strong><small>24 caracteres</small></button>
+            <button type="button" data-profile="wifi"><strong>Wi-Fi</strong><small>20 caracteres</small></button>
+            <button type="button" data-profile="maximum"><strong>Máxima</strong><small>32 caracteres</small></button>
           </div>
 
           <div class="length-control">
@@ -336,6 +391,43 @@
               <span><b>#!?</b> Símbolos</span>
             </label>
           </fieldset>
+          <label class="ambiguity-toggle">
+            <input id="exclude-ambiguous" type="checkbox" />
+            <span>
+              <strong>Evitar caracteres parecidos</strong>
+              <small>Remove I, l, 1, O, 0 e o para facilitar leitura.</small>
+            </span>
+          </label>
+
+          <fieldset class="passphrase-options" id="passphrase-options" hidden>
+            <legend>Configuração da frase-senha</legend>
+            <label>
+              Palavras
+              <select id="passphrase-words">
+                <option value="4">4 palavras</option>
+                <option value="5" selected>5 palavras</option>
+                <option value="6">6 palavras</option>
+                <option value="7">7 palavras</option>
+              </select>
+            </label>
+            <label>
+              Separador
+              <select id="passphrase-separator">
+                <option value="-">Hífen —</option>
+                <option value=".">Ponto .</option>
+                <option value="_">Sublinhado _</option>
+                <option value=" ">Espaço</option>
+              </select>
+            </label>
+            <label class="compact-toggle">
+              <input id="passphrase-capitalize" type="checkbox" checked />
+              Iniciais maiúsculas
+            </label>
+            <label class="compact-toggle">
+              <input id="passphrase-number" type="checkbox" checked />
+              Incluir número
+            </label>
+          </fieldset>
 
           <p class="inline-alert" id="config-alert" role="alert" hidden></p>
           <button
@@ -353,7 +445,7 @@
           </p>
         </article>
 
-        <article class="hud-panel vault-panel">
+        <article class="hud-panel vault-panel" data-panel-zone="vault">
           <div class="panel-heading">
             <div>
               <span class="panel-code">COFRE_7</span>
@@ -386,6 +478,7 @@
               id="copy-button"
               type="button"
               disabled
+              title="Disponível depois que a senha for liberada."
             >
               <span id="copy-label">Copiar Senha</span>
               <span aria-hidden="true">⧉</span>
@@ -431,7 +524,7 @@
           </section>
         </article>
 
-        <article class="hud-panel terminal-panel">
+        <article class="hud-panel terminal-panel" data-panel-zone="forge">
           <div class="terminal-topbar">
             <div class="terminal-lights" aria-hidden="true">
               <span></span><span></span><span></span>
@@ -466,7 +559,7 @@
         </article>
       </section>
 
-      <section class="hud-panel game-section" aria-labelledby="game-title">
+      <section class="hud-panel game-section" data-zone="breaker" aria-labelledby="game-title">
         <div class="game-copy">
           <div class="panel-heading">
             <div>
@@ -598,6 +691,7 @@
               id="start-game-button"
               type="button"
               disabled
+              title="Gere uma senha na Forja para habilitar."
             >
               Iniciar ICEbreaker
             </button>
@@ -613,6 +707,7 @@
               id="pause-game-button"
               type="button"
               disabled
+              title="Disponível durante uma incursão."
             >
               Pausar
             </button>
@@ -621,6 +716,7 @@
               id="pulse-game-button"
               type="button"
               disabled
+              title="Colete um fragmento para carregar um Pulso Fantasma."
             >
               Pulso Fantasma
             </button>
@@ -658,8 +754,24 @@
         </div>
       </section>
 
+      <section class="hud-panel daily-section" data-zone="breaker" aria-labelledby="daily-title">
+        <div>
+          <span class="panel-code">CONTRATO // RENOVA À MEIA-NOITE</span>
+          <h2 id="daily-title">Desafio diário</h2>
+          <p id="daily-description">Carregando contrato da malha...</p>
+        </div>
+        <div class="daily-target">
+          <span>ALVO</span>
+          <strong id="daily-target-score">0000</strong>
+          <button class="action-button secondary-action" id="daily-activate-button" type="button">
+            Carregar contrato
+          </button>
+        </div>
+      </section>
+
       <section
         class="hud-panel accessibility-section"
+        data-zone="archive"
         aria-labelledby="accessibility-title"
       >
         <div>
@@ -685,6 +797,7 @@
 
       <section
         class="hud-panel glossary-section"
+        data-zone="archive"
         aria-labelledby="glossary-title"
       >
         <div class="panel-heading">
@@ -742,7 +855,24 @@
         </div>
       </section>
 
-      <section class="hud-panel score-section" aria-labelledby="score-title">
+      <section class="hud-panel career-section" data-zone="vault" aria-labelledby="career-title">
+        <div class="panel-heading">
+          <div>
+            <span class="panel-code">CARREIRA // MEMÓRIA LOCAL</span>
+            <h2 id="career-title">Reputação do Netrunner</h2>
+          </div>
+          <strong class="career-rank" id="career-rank">RECRUTA</strong>
+        </div>
+        <div class="career-stats">
+          <div><span>VITÓRIAS</span><strong id="career-wins">0</strong></div>
+          <div><span>MELHOR SCORE</span><strong id="career-score">0000</strong></div>
+          <div><span>MELHOR TEMPO</span><strong id="career-time">--:--</strong></div>
+          <div><span>SEQUÊNCIA</span><strong id="career-streak">0 DIAS</strong></div>
+        </div>
+        <div class="achievement-grid" id="achievement-grid" aria-label="Conquistas desbloqueadas"></div>
+      </section>
+
+      <section class="hud-panel score-section" data-zone="vault" aria-labelledby="score-title">
         <div class="panel-heading">
           <div>
             <span class="panel-code">ARQUIVO // INCURSÕES LOCAIS</span>
@@ -764,12 +894,13 @@
       </section>
 
       <footer>
-        <span>NETRUNNER PASSWORD LAB // VERSÃO 2.0.0</span>
+        <span>NETRUNNER PASSWORD LAB // VERSÃO 3.0.0</span>
         <span class="marcus-signature"
           >Nemo esteve aqui // como esteve em Night City</span
         >
         <span>Concebido por Marcus Guedes. Construído para GitHub Pages.</span>
       </footer>
+      <div class="action-feedback" id="action-feedback" role="status" aria-live="polite"></div>
     </main>
   </body>
 </html>

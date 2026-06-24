@@ -59,6 +59,8 @@ somente depois de uma ação do jogador.
 - Inclusão garantida de pelo menos um caractere de cada grupo selecionado
 - Análise de força com score, classificação e feedback
 - Dicas simples para melhorar senhas fracas ou médias
+- Frases-senha, perfis recomendados e exclusão de caracteres ambíguos
+- Modo rápido para gerar e copiar sem jogar
 - Senha mascarada até a conclusão do desafio
 - Minijogo em Canvas com movimentação em grade
 - Pixel-art procedural com cidade animada, sprites em Canvas e efeitos de HUD
@@ -79,6 +81,8 @@ somente depois de uma ação do jogador.
 - Aba de primeiro contato com origem, contexto cyberpunk e instruções rápidas
 - Entrada sem áudio, modo leve, brilho reduzido e controles maiores
 - Tutorial jogável curto antes do desafio principal
+- Navegação por Forja, ICEbreaker, Cofre e Arquivo
+- Desafio diário, carreira local, recordes e conquistas
 - Página 404 com orientação para a URL correta do GitHub Pages
 - Glossário de termos cyberpunk
 - Expiração automática da credencial após inatividade

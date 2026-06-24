@@ -16,6 +16,15 @@ const COMMON_PATTERNS = [
   "abcd",
 ];
 
+const PASSPHRASE_WORDS = [
+  "abismo", "acesso", "agente", "alarme", "arquivo", "aurora", "bit", "circuito",
+  "cidade", "código", "cofre", "cometa", "dados", "deck", "delta", "drone",
+  "eclipse", "enlace", "espectro", "fluxo", "fragmento", "horizonte", "impulso",
+  "laser", "malha", "matrix", "neon", "nexo", "nômade", "núcleo", "órbita",
+  "pulso", "quantum", "rede", "ruído", "sinal", "sintético", "terminal", "vetor",
+  "vórtice", "zero",
+];
+
 function secureIndex(max) {
   if (!Number.isSafeInteger(max) || max <= 0) {
     throw new RangeError("secureIndex requires a positive integer.");
@@ -47,12 +56,30 @@ function secureShuffle(characters) {
   return shuffled.join("");
 }
 
-export function generatePassword({ length, uppercase, lowercase, numbers, symbols }) {
+function secureShuffleItems(items) {
+  const shuffled = [...items];
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = secureIndex(index + 1);
+    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+  }
+  return shuffled;
+}
+
+export function generatePassword({
+  length,
+  uppercase,
+  lowercase,
+  numbers,
+  symbols,
+  excludeAmbiguous = false,
+}) {
+  const normalizeSet = (set) =>
+    excludeAmbiguous ? set.replace(/[Il1O0o]/g, "") : set;
   const selectedSets = [
-    uppercase && CHARACTER_SETS.uppercase,
-    lowercase && CHARACTER_SETS.lowercase,
-    numbers && CHARACTER_SETS.numbers,
-    symbols && CHARACTER_SETS.symbols,
+    uppercase && normalizeSet(CHARACTER_SETS.uppercase),
+    lowercase && normalizeSet(CHARACTER_SETS.lowercase),
+    numbers && normalizeSet(CHARACTER_SETS.numbers),
+    symbols && normalizeSet(CHARACTER_SETS.symbols),
   ].filter(Boolean);
 
   if (selectedSets.length === 0) {
@@ -68,6 +95,28 @@ export function generatePassword({ length, uppercase, lowercase, numbers, symbol
   }
 
   return secureShuffle(password);
+}
+
+export function generatePassphrase({
+  words = 5,
+  separator = "-",
+  capitalize = true,
+  includeNumber = true,
+}) {
+  const safeWords = Math.min(8, Math.max(3, Number(words) || 5));
+  const safeSeparator = typeof separator === "string" ? separator.slice(0, 3) : "-";
+  const selected = [];
+
+  while (selected.length < safeWords) {
+    const word = PASSPHRASE_WORDS[secureIndex(PASSPHRASE_WORDS.length)];
+    selected.push(capitalize ? `${word[0].toUpperCase()}${word.slice(1)}` : word);
+  }
+
+  if (includeNumber) {
+    selected.push(String(secureIndex(90) + 10));
+  }
+
+  return secureShuffleItems(selected).join(safeSeparator);
 }
 
 export function maskPassword(password) {

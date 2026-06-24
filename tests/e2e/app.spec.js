@@ -88,7 +88,9 @@ async function generate(page) {
 
 test("fluxo completo revela a senha somente após vencer o ICEbreaker", async ({ page }) => {
   await enterDeck(page);
+  await page.getByRole("button", { name: /ICEBREAKER/ }).click();
   await page.locator("#difficulty").selectOption("rookie");
+  await page.getByRole("button", { name: /FORJA/ }).click();
   await generate(page);
   await page.getByRole("button", { name: "Iniciar ICEbreaker" }).click();
   await expect(page.locator("#game-state-badge")).toHaveText("EM EXECUÇÃO", {
@@ -155,6 +157,7 @@ test("interface móvel oferece controles por toque", async ({ page }, testInfo) 
 
 test("glossário explica os termos preservados em inglês", async ({ page }) => {
   await enterDeck(page);
+  await page.getByRole("button", { name: /ARQUIVO/ }).click();
   await expect(page.getByRole("heading", { name: "Glossário do Ciberespaço" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "ICE", exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Cyberdeck", exact: true })).toBeVisible();
@@ -163,6 +166,7 @@ test("glossário explica os termos preservados em inglês", async ({ page }) => 
 
 test("controles podem ser remapeados sem duplicar teclas", async ({ page }) => {
   await enterDeck(page);
+  await page.getByRole("button", { name: /ICEBREAKER/ }).click();
   const up = page.locator("[data-bind='up']");
   await up.click();
   await page.keyboard.press("I");
@@ -201,6 +205,7 @@ test("primeiro acesso oferece entrada sem áudio, tutorial e modo leve", async (
   await expect(page.locator("#sound-label")).toHaveText("ÁUDIO ATIVO");
   await expect(page.locator("#quiet-mode-button")).toHaveAttribute("aria-pressed", "false");
 
+  await page.getByRole("button", { name: /ARQUIVO/ }).click();
   await page.locator("#lite-toggle").click();
   await expect(page.locator("body")).toHaveClass(/lite-mode/);
   await expect(page.locator("#sound-label")).toHaveText("ÁUDIO SILENCIADO");
@@ -214,13 +219,81 @@ test("primeiro acesso oferece entrada sem áudio, tutorial e modo leve", async (
   await page.keyboard.press("ArrowDown");
   await expect(page.locator("#training-message")).toContainText("Tutorial completo");
 
+  await page.getByRole("button", { name: /FORJA/ }).click();
   await page.locator("#share-link-button").click();
   await expect(page.locator("#share-link-button")).toContainText(/Link copiado|Copie no README/);
 });
 
+test("navegação operacional reduz a página a uma área por vez", async ({ page }) => {
+  await enterDeck(page);
+  await expect(page.locator(".config-panel")).toBeVisible();
+  await expect(page.locator(".game-section")).toBeHidden();
+
+  await page.getByRole("button", { name: /ICEBREAKER/ }).click();
+  await expect(page.locator(".game-section")).toBeVisible();
+  await expect(page.locator(".config-panel")).toBeHidden();
+
+  await page.getByRole("button", { name: /COFRE/ }).click();
+  await expect(page.locator(".vault-panel")).toBeVisible();
+  await expect(page.locator(".career-section")).toBeVisible();
+});
+
+test("controles novos respondem e atualizam seus estados", async ({ page }) => {
+  await enterDeck(page);
+
+  await page.locator("#operation-quick").click();
+  await expect(page.locator("#operation-quick")).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("#generate-button")).toContainText("Gerar e Liberar");
+  await page.locator("#operation-full").click();
+  await expect(page.locator("#operation-full")).toHaveAttribute("aria-pressed", "true");
+
+  await page.locator("#passphrase-mode-button").click();
+  await expect(page.locator("#passphrase-options")).toBeVisible();
+  await page.locator("#random-mode-button").click();
+  await expect(page.locator("#passphrase-options")).toBeHidden();
+
+  await page.locator("[data-profile='bank']").click();
+  await expect(page.locator("#password-length")).toHaveValue("24");
+  await page.locator("[data-profile='wifi']").click();
+  await expect(page.locator("#include-symbols")).not.toBeChecked();
+
+  await page.getByRole("button", { name: /ICEBREAKER/ }).click();
+  await page.locator("#daily-activate-button").click();
+  await expect(page.locator("#daily-activate-button")).toContainText("Contrato carregado");
+
+  await page.getByRole("button", { name: /ARQUIVO/ }).click();
+  await page.locator("#reduce-glow-button").click();
+  await expect(page.locator("body")).toHaveClass(/reduced-glow/);
+  await page.locator("#big-controls-button").click();
+  await expect(page.locator("body")).toHaveClass(/big-controls/);
+  await page.locator("#quiet-mode-button").click();
+  await expect(page.locator("#quiet-mode-button")).toHaveAttribute("aria-pressed", "true");
+  await page.locator("#training-reset-button").click();
+  await expect(page.locator("#training-message")).toContainText("Treino reiniciado");
+
+  await page.getByRole("button", { name: /COFRE/ }).click();
+  await page.locator("#clear-scores-button").click();
+  await expect(page.locator("#score-list")).toContainText("Nenhuma incursão");
+});
+
+test("modo rápido e frase-senha entregam utilidade sem iniciar o jogo", async ({ page }) => {
+  await enterDeck(page);
+  await page.locator("#operation-quick").click();
+  await page.locator("#passphrase-mode-button").click();
+  await page.locator("#passphrase-words").selectOption("4");
+  await page.locator("#generate-button").click();
+
+  await expect(page.locator("#vault-status")).toHaveText("SENHA LIBERADA");
+  await expect(page.locator("#copy-button")).toBeEnabled();
+  await expect(page.locator("#password-output")).toHaveText(/.+-.+/);
+  await expect(page.locator("#main-content")).toHaveAttribute("data-active-zone", "vault");
+});
+
 test("pulso fantasma congela bugs e consome carga", async ({ page }) => {
   await enterDeck(page);
+  await page.getByRole("button", { name: /ICEBREAKER/ }).click();
   await page.locator("#difficulty").selectOption("rookie");
+  await page.getByRole("button", { name: /FORJA/ }).click();
   await generate(page);
   await page.getByRole("button", { name: "Iniciar ICEbreaker" }).click();
   await expect(page.locator("#game-state-badge")).toHaveText("EM EXECUÇÃO", {
