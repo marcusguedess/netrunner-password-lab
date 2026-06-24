@@ -2,6 +2,9 @@
 
 ## 2.0.0-rc.2 — TRACE e clareza para primeiro acesso
 
+- Aba de primeiro contato com origem do projeto, explicação cyberpunk e termos para leigos
+- Rota rápida no topo com os cliques essenciais para gerar, iniciar o ICEbreaker e copiar a senha
+- Textos de onboarding revisados em linguagem mais direta e menos formal
 - Sistema de TRACE no ICEbreaker, medindo tempo, movimentos e colisões com paredes
 - Penalidade de pontuação para incursões ruidosas
 - Estado de contra-rastro no HUD do jogo

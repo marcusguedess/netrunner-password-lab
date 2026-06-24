@@ -56,7 +56,7 @@
         </div>
         <button class="jack-in-button" id="jack-in-button" type="button">
           <span>CONECTAR</span>
-          <small>Iniciar enlace neural com canal de áudio seguro</small>
+          <small>Comece por aqui: abre o laboratório e libera o áudio</small>
         </button>
         <p class="boot-footnote">
           Simulação original de cyberdeck // fones recomendados
@@ -102,6 +102,79 @@
         </button>
       </header>
 
+      <details class="about-panel hud-panel">
+        <summary>
+          <span class="about-mark" aria-hidden="true">?</span>
+          <span>
+            <span class="panel-code">DOSSIÊ // PRIMEIRO CONTATO</span>
+            <strong>Tá perdido? Abre aqui.</strong>
+          </span>
+        </summary>
+        <div class="about-intro">
+          <p>
+            O Netrunner Password Lab é um gerador de senhas com cara de
+            minigame cyberpunk. Você cria uma senha, encara um desafio rápido e
+            só então copia a chave. É ferramenta, mas com neon no sangue.
+          </p>
+        </div>
+        <div class="about-grid">
+          <article>
+            <h2>Por que surgiu</h2>
+            <p>
+              Este projeto nasceu da minha paixão por cyberpunk, meu gênero
+              predileto dentro da ficção científica. Usei essa estética como
+              inspiração para transformar um gerador de senhas em uma pequena
+              experiência interativa.
+            </p>
+          </article>
+          <article>
+            <h2>O que faz</h2>
+            <p>
+              O laboratório cria uma senha forte no próprio navegador, mede sua
+              força e só mostra a credencial depois que você vence o ICEbreaker.
+              Nada vai para servidor; a parada rola no seu navegador.
+            </p>
+          </article>
+          <article>
+            <h2>Cyberpunk sem mistério</h2>
+            <p>
+              Cyberpunk imagina futuros de alta tecnologia e vida difícil:
+              megacorporações, ruas neon, redes imensas, implantes, hackers e
+              pessoas tentando sobreviver dentro de sistemas hostis.
+            </p>
+          </article>
+          <article>
+            <h2>Netrunners de plantão</h2>
+            <p>
+              Netrunner é o operador que atravessa redes perigosas. "Trilha-redes"
+              é uma brincadeira/tradução livre: alguém que abre caminho por rotas
+              digitais, contorna defesas e busca dados no ciberespaço.
+            </p>
+          </article>
+        </div>
+      </details>
+
+      <section class="quick-start hud-panel" aria-labelledby="quick-start-title">
+        <div>
+          <span class="panel-code">ROTA RÁPIDA // SEM PÂNICO</span>
+          <h2 id="quick-start-title">Como começa?</h2>
+        </div>
+        <ol>
+          <li>
+            <span>01</span>
+            <p>Clique em <strong>Gerar Senha Criptografada</strong>.</p>
+          </li>
+          <li>
+            <span>02</span>
+            <p>Clique em <strong>Iniciar ICEbreaker</strong>.</p>
+          </li>
+          <li>
+            <span>03</span>
+            <p>Pegue os 4 fragmentos, vá ao terminal e copie a senha.</p>
+          </li>
+        </ol>
+      </section>
+
       <section
         class="audio-mixer hud-panel"
         aria-label="Mixer de áudio do cyberdeck"
@@ -142,8 +215,8 @@
         <span class="panel-code">BRIEFING // PARA PRIMEIRO ACESSO</span>
         <div>
           <p>
-            A senha nasce somente neste navegador. O jogo não criptografa contra
-            inspeção técnica: ele controla quando a senha aparece na tela.
+            A senha nasce só neste navegador. O jogo segura a revelação na tela,
+            mas não é blindagem contra quem abre ferramentas técnicas.
           </p>
           <p>
             Nada é enviado para servidor. O ranking local guarda apenas tempo,
@@ -216,9 +289,9 @@
             <span aria-hidden="true">↯</span>
           </button>
           <p class="unlock-rule">
-            <strong>PROTOCOLO DO COFRE:</strong> a senha será gerada agora, mas
-            só poderá ser vista depois que você coletar os 4 fragmentos e
-            alcançar o terminal final.
+            <strong>COMECE AQUI:</strong> este botão cria a senha e tranca a
+            visualização. Depois, desça para o jogo e clique em
+            <strong>Iniciar ICEbreaker</strong>.
           </p>
         </article>
 
@@ -345,8 +418,9 @@
           </div>
 
           <p>
-            Conduza o netrunner pelo cofre de dados. Colete todos os fragmentos,
-            evite os bugs ICE e conecte-se ao terminal final.
+            Depois de gerar a senha, clique em <strong>Iniciar ICEbreaker</strong>.
+            A missão é simples: colete os 4 fragmentos, evite os bugs ICE e
+            conecte-se ao terminal final para liberar a senha.
           </p>
 
           <div class="game-stats">
@@ -513,7 +587,8 @@
               <span class="overlay-mark" aria-hidden="true">◇</span>
               <strong id="overlay-title">COFRE SELADO</strong>
               <p id="overlay-message">
-                Gere uma senha criptografada para preparar a invasão.
+                Primeiro clique em Gerar Senha Criptografada. Depois este jogo
+                libera o botão Iniciar ICEbreaker.
               </p>
             </div>
           </div>

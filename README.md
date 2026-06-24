@@ -11,8 +11,8 @@ minijogo em pixel art para desbloquear a senha.
 
 ![Versão móvel do laboratório](assets/screenshots/mobile-390x844.png)
 
-> A demonstração pública será adicionada aqui após a criação do repositório e a
-> primeira publicação pelo GitHub Pages.
+Demonstração pública:
+<https://marcusguedess.github.io/netrunner-password-lab/>
 
 ## Visão geral
 
@@ -28,6 +28,11 @@ serviço externo envolvido, e a senha real não é salva em `localStorage`.
 O bloqueio por ICE faz parte da experiência do produto. Ele não substitui
 criptografia real contra alguém que tenha controle das ferramentas de
 desenvolvimento do navegador.
+
+O projeto também é uma carta de amor ao cyberpunk, gênero predileto do autor
+dentro da ficção científica. A proposta foi usar essa paixão como combustível
+criativo para unir uma ferramenta prática, um clima de ciberespaço e um desafio
+para netrunners, ou "trilha-redes", de plantão.
 
 ## Como jogar
 
@@ -70,6 +75,7 @@ somente depois de uma ação do jogador.
 - Habilidade Pulso Fantasma carregada por fragmentos para congelar bugs ICE
 - Três arquiteturas de cofre com comportamento e trilha próprios
 - Modo estratégico e remapeamento de controles por sessão
+- Aba de primeiro contato com origem, contexto cyberpunk e instruções rápidas
 - Glossário de termos cyberpunk
 - Expiração automática da credencial após inatividade
 - Ranking local apenas com metadados não sensíveis
