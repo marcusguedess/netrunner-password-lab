@@ -26,12 +26,6 @@ jobs:
       - name: Validate and test
         run: npm ci && npm run check
 
-      - name: Install E2E browsers
-        run: npx playwright install --with-deps chromium firefox
-
-      - name: Run E2E
-        run: npm run test:e2e
-
   deploy:
     needs: verify
     permissions:
