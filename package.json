@@ -1,0 +1,23 @@
+{
+  "name": "netrunner-password-lab",
+  "version": "2.0.0-rc.2",
+  "private": true,
+  "author": "Marcus",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "python -m http.server 8080",
+    "test": "node --test",
+    "test:e2e": "playwright test",
+    "test:e2e:chromium": "playwright test --project=chromium",
+    "screenshots": "node scripts/capture-previews.mjs",
+    "icons": "node scripts/generate-icons.mjs",
+    "validate": "node scripts/validate.mjs",
+    "check": "npm run validate && npm test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.61.1"
+  }
+}

@@ -1,0 +1,616 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; media-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; manifest-src 'self'; worker-src 'self'; require-trusted-types-for 'script'; trusted-types netrunner-static"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Laboratório cyberpunk de senhas com gerador seguro e mini-game pixel art."
+    />
+    <meta name="theme-color" content="#05070b" />
+    <meta name="author" content="Marcus" />
+    <meta property="og:title" content="Netrunner Password Lab" />
+    <meta
+      property="og:description"
+      content="Gere uma senha segura, quebre o ICE e revele a chave."
+    />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:image"
+      content="./assets/netrunner-password-lab-preview.png"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <title>Netrunner Password Lab</title>
+    <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="stylesheet" href="./css/style.css" />
+    <script type="module" src="./js/app.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Pular para o laboratório</a>
+    <div class="boot-screen" id="boot-screen">
+      <canvas
+        id="city-canvas"
+        width="1280"
+        height="720"
+        aria-hidden="true"
+      ></canvas>
+      <div class="boot-noise" aria-hidden="true"></div>
+      <section class="boot-console" aria-labelledby="boot-title">
+        <div class="boot-brand">
+          <span class="boot-sigil" aria-hidden="true">N//</span>
+          <div>
+            <p>CYBERDECK PORTÁTIL DE INTRUSÃO</p>
+            <h2 id="boot-title">SISTEMA NIGHTWIRE</h2>
+          </div>
+        </div>
+        <div class="boot-log" id="boot-log" aria-live="polite">
+          <p><span>NÚCLEO</span> sequência de inicialização solicitada</p>
+        </div>
+        <div class="boot-progress" aria-hidden="true">
+          <span id="boot-progress"></span>
+        </div>
+        <button class="jack-in-button" id="jack-in-button" type="button">
+          <span>CONECTAR</span>
+          <small>Iniciar enlace neural com canal de áudio seguro</small>
+        </button>
+        <p class="boot-footnote">
+          Simulação original de cyberdeck // fones recomendados
+        </p>
+      </section>
+    </div>
+
+    <canvas id="background-canvas" aria-hidden="true"></canvas>
+    <div class="night-city-backdrop" aria-hidden="true"></div>
+    <div class="ambient-grid" aria-hidden="true"></div>
+    <div class="scanlines" aria-hidden="true"></div>
+
+    <main class="shell" id="main-content">
+      <header class="site-header hud-panel">
+        <div>
+          <p class="eyebrow">NÚCLEO // FORJA DE CREDENCIAIS</p>
+          <h1 data-text="NETRUNNER PASSWORD LAB">NETRUNNER PASSWORD LAB</h1>
+          <p class="subtitle">
+            Gere credenciais criptografadas. Quebre o ICE. Revele a chave.
+          </p>
+        </div>
+        <div class="system-state">
+          <span class="pulse-dot" aria-hidden="true"></span>
+          <span>SISTEMA ONLINE</span>
+          <small id="system-clock">00:00:00</small>
+        </div>
+        <button
+          class="sound-toggle"
+          id="sound-toggle"
+          type="button"
+          aria-pressed="false"
+        >
+          <span aria-hidden="true">◖)))</span>
+          <span id="sound-label">ÁUDIO ATIVO</span>
+        </button>
+        <button
+          class="comfort-toggle"
+          id="comfort-toggle"
+          type="button"
+          aria-pressed="false"
+        >
+          MODO CONFORTO
+        </button>
+      </header>
+
+      <section
+        class="audio-mixer hud-panel"
+        aria-label="Mixer de áudio do cyberdeck"
+      >
+        <span class="panel-code">MIXER // NIGHTWAVE</span>
+        <label
+          >MÚSICA
+          <input id="music-volume" type="range" min="0" max="100" value="38"
+        /></label>
+        <label
+          >AMBIENTE
+          <input id="ambient-volume" type="range" min="0" max="100" value="42"
+        /></label>
+        <label
+          >EFEITOS
+          <input id="effects-volume" type="range" min="0" max="100" value="72"
+        /></label>
+      </section>
+
+      <section class="mission-path hud-panel" aria-label="Fluxo de desbloqueio">
+        <div class="mission-step active" id="mission-step-generate">
+          <span>01</span><strong>GERAR</strong
+          ><small>Crie a carga segura</small>
+        </div>
+        <i aria-hidden="true">///</i>
+        <div class="mission-step" id="mission-step-break">
+          <span>02</span><strong>QUEBRAR O ICE</strong
+          ><small>Vença o ICEbreaker</small>
+        </div>
+        <i aria-hidden="true">///</i>
+        <div class="mission-step" id="mission-step-reveal">
+          <span>03</span><strong>REVELAR</strong
+          ><small>Copie a credencial</small>
+        </div>
+      </section>
+
+      <section class="operator-brief hud-panel" aria-label="Resumo de funcionamento">
+        <span class="panel-code">BRIEFING // PARA PRIMEIRO ACESSO</span>
+        <div>
+          <p>
+            A senha nasce somente neste navegador. O jogo não criptografa contra
+            inspeção técnica: ele controla quando a senha aparece na tela.
+          </p>
+          <p>
+            Nada é enviado para servidor. O ranking local guarda apenas tempo,
+            pontuação, dificuldade e data.
+          </p>
+        </div>
+      </section>
+
+      <section class="dashboard" aria-label="Laboratório de senha">
+        <article class="hud-panel config-panel">
+          <div class="panel-heading">
+            <div>
+              <span class="panel-code">NODE_01</span>
+              <h2>Forja de Credenciais</h2>
+            </div>
+            <span class="decor-bracket" aria-hidden="true"
+              >[ CONFIGURAÇÃO ]</span
+            >
+          </div>
+
+          <div class="length-control">
+            <div class="field-label">
+              <label for="password-length">Comprimento da chave</label>
+              <output id="length-output" for="password-length">16</output>
+            </div>
+            <input
+              id="password-length"
+              type="range"
+              min="8"
+              max="32"
+              value="16"
+              aria-describedby="length-hint"
+            />
+            <div class="range-scale" id="length-hint">
+              <span>08</span><span>32</span>
+            </div>
+          </div>
+
+          <fieldset class="option-grid">
+            <legend>Protocolos de caracteres</legend>
+            <label class="protocol-toggle">
+              <input id="include-uppercase" type="checkbox" checked />
+              <span class="toggle-box" aria-hidden="true"></span>
+              <span><b>A–Z</b> Maiúsculas</span>
+            </label>
+            <label class="protocol-toggle">
+              <input id="include-lowercase" type="checkbox" checked />
+              <span class="toggle-box" aria-hidden="true"></span>
+              <span><b>a–z</b> Minúsculas</span>
+            </label>
+            <label class="protocol-toggle">
+              <input id="include-numbers" type="checkbox" checked />
+              <span class="toggle-box" aria-hidden="true"></span>
+              <span><b>0–9</b> Números</span>
+            </label>
+            <label class="protocol-toggle">
+              <input id="include-symbols" type="checkbox" checked />
+              <span class="toggle-box" aria-hidden="true"></span>
+              <span><b>#!?</b> Símbolos</span>
+            </label>
+          </fieldset>
+
+          <p class="inline-alert" id="config-alert" role="alert" hidden></p>
+          <button
+            class="action-button primary-action"
+            id="generate-button"
+            type="button"
+          >
+            <span>Gerar Senha Criptografada</span>
+            <span aria-hidden="true">↯</span>
+          </button>
+          <p class="unlock-rule">
+            <strong>PROTOCOLO DO COFRE:</strong> a senha será gerada agora, mas
+            só poderá ser vista depois que você coletar os 4 fragmentos e
+            alcançar o terminal final.
+          </p>
+        </article>
+
+        <article class="hud-panel vault-panel">
+          <div class="panel-heading">
+            <div>
+              <span class="panel-code">VAULT_7</span>
+              <h2>Carga Criptografada</h2>
+            </div>
+            <span class="vault-led" aria-hidden="true"></span>
+          </div>
+
+          <div class="password-vault locked" id="password-vault">
+            <div class="vault-status">
+              <span id="vault-status">AGUARDANDO GERAÇÃO DA CHAVE</span>
+              <span class="lock-icon" id="lock-icon" aria-hidden="true">◆</span>
+            </div>
+            <output
+              class="password-output"
+              id="password-output"
+              aria-live="polite"
+              aria-label="Senha gerada"
+              >SEM_CARGA</output
+            >
+            <div class="vault-meta">
+              <span id="vault-cipher">CIFRA // EM ESPERA</span>
+              <span id="vault-length">00 BYTES</span>
+            </div>
+          </div>
+
+          <div class="vault-actions">
+            <button
+              class="action-button copy-action"
+              id="copy-button"
+              type="button"
+              disabled
+            >
+              <span id="copy-label">Copiar Senha</span>
+              <span aria-hidden="true">⧉</span>
+            </button>
+            <button
+              class="action-button secondary-action"
+              id="hide-password-button"
+              type="button"
+              hidden
+            >
+              Ocultar novamente
+            </button>
+          </div>
+          <p class="expiry-notice" id="expiry-notice" hidden>
+            A credencial será removida da memória em
+            <span id="expiry-countdown">05:00</span>.
+          </p>
+
+          <section class="strength-module" aria-labelledby="strength-title">
+            <div class="strength-readout">
+              <div>
+                <span class="panel-code" id="strength-title"
+                  >VARREDURA DE ENTROPIA</span
+                >
+                <strong id="strength-label">NÃO ANALISADA</strong>
+              </div>
+              <output id="strength-score">00</output>
+            </div>
+            <div
+              class="strength-track"
+              role="progressbar"
+              aria-label="Força da senha"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow="0"
+            >
+              <span id="strength-bar"></span>
+            </div>
+            <p id="strength-feedback">
+              Gere uma carga para iniciar a varredura de entropia.
+            </p>
+          </section>
+        </article>
+
+        <article class="hud-panel terminal-panel">
+          <div class="terminal-topbar">
+            <div class="terminal-lights" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </div>
+            <span>root@netrunner:~/vault</span>
+            <button
+              id="clear-log-button"
+              type="button"
+              aria-label="Limpar terminal"
+            >
+              CLR
+            </button>
+          </div>
+          <div class="terminal-log" id="terminal-log" aria-live="polite">
+            <p>
+              <time>00:00:00</time
+              ><span>&gt; inicialização do sistema concluída</span>
+            </p>
+            <p>
+              <time>00:00:00</time
+              ><span>&gt; módulo de entropia carregado</span>
+            </p>
+            <p>
+              <time>00:00:00</time
+              ><span
+                >&gt; aguardando comando do operador<span class="cursor"
+                  >_</span
+                ></span
+              >
+            </p>
+          </div>
+        </article>
+      </section>
+
+      <section class="hud-panel game-section" aria-labelledby="game-title">
+        <div class="game-copy">
+          <div class="panel-heading">
+            <div>
+              <span class="panel-code">ICEBREAKER.EXE</span>
+              <h2 id="game-title">Infiltração Neural do Cofre</h2>
+            </div>
+            <div class="game-state-badge" id="game-state-badge">EM ESPERA</div>
+          </div>
+
+          <p>
+            Conduza o netrunner pelo cofre de dados. Colete todos os fragmentos,
+            evite os bugs ICE e conecte-se ao terminal final.
+          </p>
+
+          <div class="game-stats">
+            <div>
+              <span>FRAGMENTOS DE DADOS</span>
+              <strong id="shard-count">0 / 4</strong>
+            </div>
+            <div>
+              <span>ESTADO DO ICE</span>
+              <strong id="ice-status">DORMENTE</strong>
+            </div>
+            <div>
+              <span>TEMPO DE INCURSÃO</span>
+              <strong id="run-time">00:00</strong>
+            </div>
+            <div>
+              <span>PONTUAÇÃO</span>
+              <strong id="run-score">0000</strong>
+            </div>
+            <div>
+              <span>TRACE</span>
+              <strong id="trace-level">00%</strong>
+            </div>
+            <div>
+              <span>CONTRA-RASTRO</span>
+              <strong id="trace-status">FANTASMA</strong>
+            </div>
+            <div>
+              <span>PULSOS FANTASMA</span>
+              <strong id="pulse-count">0</strong>
+            </div>
+            <div>
+              <span>ARQUITETURA</span>
+              <strong id="vault-level">SETOR A</strong>
+            </div>
+          </div>
+
+          <label class="difficulty-control" for="difficulty">
+            <span>DIFICULDADE DO ICE</span>
+            <select id="difficulty">
+              <option value="rookie">Operador</option>
+              <option value="runner" selected>Netrunner</option>
+              <option value="legend">Lenda Urbana</option>
+            </select>
+          </label>
+          <label class="strategy-toggle">
+            <input id="strategic-mode" type="checkbox" />
+            <span>Modo estratégico</span>
+            <small
+              >Os bugs ICE só se movem depois de você. Sem pressão em tempo
+              real.</small
+            >
+          </label>
+
+          <div class="map-legend" aria-label="Legenda do mapa">
+            <span><i class="legend-runner"></i> Netrunner</span>
+            <span><i class="legend-shard"></i> Fragmento</span>
+            <span><i class="legend-bug"></i> Bug ICE</span>
+            <span><i class="legend-terminal"></i> Terminal</span>
+          </div>
+
+          <div class="controls-guide" aria-label="Controles do jogo">
+            <div class="key-cluster" aria-hidden="true">
+              <span></span><kbd>W</kbd><span></span> <kbd>A</kbd><kbd>S</kbd
+              ><kbd>D</kbd>
+            </div>
+            <div>
+              <b>WASD / SETAS</b>
+              <span>Mova um nó da grade por vez</span>
+            </div>
+          </div>
+          <div class="key-remap" aria-label="Remapeamento de controles">
+            <span>REMAPEAR</span>
+            <button type="button" data-bind="up">↑ <kbd>W</kbd></button>
+            <button type="button" data-bind="left">← <kbd>A</kbd></button>
+            <button type="button" data-bind="down">↓ <kbd>S</kbd></button>
+            <button type="button" data-bind="right">→ <kbd>D</kbd></button>
+          </div>
+
+          <div class="touch-controls" aria-label="Controles direcionais">
+            <span></span>
+            <button
+              type="button"
+              data-direction="up"
+              aria-label="Mover para cima"
+            >
+              ▲
+            </button>
+            <span></span>
+            <button
+              type="button"
+              data-direction="left"
+              aria-label="Mover para esquerda"
+            >
+              ◀
+            </button>
+            <button
+              type="button"
+              data-direction="down"
+              aria-label="Mover para baixo"
+            >
+              ▼
+            </button>
+            <button
+              type="button"
+              data-direction="right"
+              aria-label="Mover para direita"
+            >
+              ▶
+            </button>
+          </div>
+
+          <div class="game-actions">
+            <button
+              class="action-button primary-action"
+              id="start-game-button"
+              type="button"
+              disabled
+            >
+              Iniciar ICEbreaker
+            </button>
+            <button
+              class="action-button secondary-action"
+              id="restart-game-button"
+              type="button"
+            >
+              Reiniciar Incursão
+            </button>
+            <button
+              class="action-button secondary-action"
+              id="pause-game-button"
+              type="button"
+              disabled
+            >
+              Pausar
+            </button>
+            <button
+              class="action-button pulse-action"
+              id="pulse-game-button"
+              type="button"
+              disabled
+            >
+              Pulso Fantasma
+            </button>
+          </div>
+        </div>
+
+        <div class="game-console">
+          <div class="canvas-frame" id="canvas-frame">
+            <canvas
+              id="game-canvas"
+              width="768"
+              height="480"
+              tabindex="0"
+              aria-label="Mini-game ICEbreaker. Use WASD ou setas para mover."
+            ></canvas>
+            <div class="canvas-vignette" aria-hidden="true"></div>
+            <div
+              class="game-overlay visible"
+              id="game-overlay"
+              role="status"
+              aria-live="polite"
+            >
+              <span class="overlay-mark" aria-hidden="true">◇</span>
+              <strong id="overlay-title">COFRE SELADO</strong>
+              <p id="overlay-message">
+                Gere uma senha criptografada para preparar a invasão.
+              </p>
+            </div>
+          </div>
+          <div class="game-message" id="game-message" aria-live="polite">
+            ICEbreaker aguardando comando.
+          </div>
+          <p class="sr-only" id="game-status-detail" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <section
+        class="hud-panel glossary-section"
+        aria-labelledby="glossary-title"
+      >
+        <div class="panel-heading">
+          <div>
+            <span class="panel-code">ARQUIVO // LINGUAGEM DA RUA</span>
+            <h2 id="glossary-title">Glossário do Ciberespaço</h2>
+          </div>
+          <span class="decor-bracket" aria-hidden="true"
+            >[ DICIONÁRIO DE CAMPO ]</span
+          >
+        </div>
+        <div class="glossary-grid">
+          <article>
+            <h3>ICE</h3>
+            <p>
+              Intrusion Countermeasures Electronics. Barreiras digitais que
+              detectam, bloqueiam ou atacam invasores.
+            </p>
+          </article>
+          <article>
+            <h3>Cyberdeck</h3>
+            <p>
+              Computador portátil especializado em invasões, enlaces neurais e
+              navegação pelo ciberespaço.
+            </p>
+          </article>
+          <article>
+            <h3>Netrunner</h3>
+            <p>
+              Operador que atravessa redes hostis, rompe defesas e extrai dados
+              de sistemas protegidos.
+            </p>
+          </article>
+          <article>
+            <h3>Jack in</h3>
+            <p>
+              Conectar-se diretamente a uma rede ou ambiente virtual por uma
+              interface neural ou cyberdeck.
+            </p>
+          </article>
+          <article>
+            <h3>Data shard</h3>
+            <p>
+              Fragmento compacto de informação. Aqui, cada shard contém parte da
+              chave necessária para romper o ICE.
+            </p>
+          </article>
+          <article>
+            <h3>Flatline</h3>
+            <p>
+              Gíria para uma conexão neural encerrada à força. No laboratório,
+              significa que um bug ICE capturou o runner.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="hud-panel score-section" aria-labelledby="score-title">
+        <div class="panel-heading">
+          <div>
+            <span class="panel-code">ARQUIVO // INCURSÕES LOCAIS</span>
+            <h2 id="score-title">Registro de Netrunners</h2>
+          </div>
+          <button class="terminal-clear" id="clear-scores-button" type="button">
+            LIMPAR REGISTRO
+          </button>
+        </div>
+        <p class="score-privacy">
+          Somente tempo, pontuação, dificuldade e data ficam neste navegador.
+          Senhas nunca entram no registro.
+        </p>
+        <ol class="score-list" id="score-list">
+          <li class="empty-score">
+            Nenhuma incursão concluída neste dispositivo.
+          </li>
+        </ol>
+      </section>
+
+      <footer>
+        <span>NETRUNNER PASSWORD LAB // VERSÃO 2.0 RC2</span>
+        <span class="marcus-signature"
+          >Nemo esteve aqui // como esteve em Night City</span
+        >
+        <span>Concebido por Marcus Guedes. Construído para GitHub Pages.</span>
+      </footer>
+    </main>
+  </body>
+</html>
