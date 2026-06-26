@@ -4,8 +4,6 @@
 
 **Marcus** — conceito, direção criativa e desenvolvimento.
 
-> marcus esteve aqui, como esteve em Night City.
-
 ## Identidade
 
 O universo visual, a cidade pixel art, o cyberdeck Nightwire, o ICEbreaker, os

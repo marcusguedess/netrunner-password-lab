@@ -32,7 +32,7 @@
 - Habilidade Pulso Fantasma carregada por fragmentos para congelar bugs ICE
 - Cidade de boot com veículos e letreiros em pixel-art procedural
 - Sprites do ICEbreaker com microanimações, pixels orbitais e terminal piscante
-- Backdrop fixo de Night City em pixel-art atrás dos painéis finais
+- Backdrop fixo de cidade cyberpunk em pixel art atrás dos painéis finais
 - Briefing curto explicando o funcionamento para pessoas leigas
 - Documentação atualizada com a nova camada tática
 

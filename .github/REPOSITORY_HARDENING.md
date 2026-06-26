@@ -31,12 +31,6 @@ push.
 ## CODEOWNERS
 
 Crie `.github/CODEOWNERS` somente depois de confirmar o nome exato da conta do
-GitHub. Não use um identificador presumido. Recomenda-se proteger especialmente:
-
-```text
-* @SEU-USUARIO
-/.github/ @SEU-USUARIO
-/js/password.js @SEU-USUARIO
-/sw.js @SEU-USUARIO
-/index.html @SEU-USUARIO
-```
+GitHub. Não use um identificador presumido. Recomenda-se proteger especialmente
+o repositório inteiro, a pasta `.github/`, `js/password.js`, `sw.js` e
+`index.html`.

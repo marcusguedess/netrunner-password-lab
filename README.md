@@ -16,11 +16,10 @@ Demonstração pública:
 
 ## Visão geral
 
-O Netrunner Password Lab transforma a geração de senhas em uma pequena
-infiltração digital. A senha é criada no navegador e imediatamente protegida
-por uma camada de ICE. Para revelar o conteúdo, o usuário precisa conduzir o
-netrunner pelo mapa, coletar quatro fragmentos de dados e alcançar o terminal
-final sem tocar nos bugs inimigos.
+O Netrunner Password Lab é um experimento de produto digital que combina um
+gerador de senhas com uma interface inspirada em cyberpunk e um minijogo em
+Canvas. A senha é criada no navegador e permanece mascarada até que o usuário
+conclua o desafio do ICEbreaker.
 
 O projeto é totalmente frontend. Não existe banco de dados, autenticação ou
 serviço externo envolvido, e a senha real não é salva em `localStorage`.
@@ -29,10 +28,11 @@ O bloqueio por ICE faz parte da experiência do produto. Ele não substitui
 criptografia real contra alguém que tenha controle das ferramentas de
 desenvolvimento do navegador.
 
-O projeto também é uma carta de amor ao cyberpunk, gênero predileto do autor
-dentro da ficção científica. A proposta foi usar essa paixão como combustível
-criativo para unir uma ferramenta prática, um clima de ciberespaço e um desafio
-para netrunners, ou "trilha-redes", de plantão.
+A direção visual usa o cyberpunk como linguagem para tornar uma ferramenta
+utilitária mais memorável: HUDs densos, pixel art procedural, áudio sintetizado
+e uma camada lúdica que reforça a ideia de proteger e revelar uma credencial.
+Há um pouco de carta de amor ao gênero, mas com foco em produto, interação e
+creative coding.
 
 ## Como jogar
 
@@ -53,42 +53,36 @@ somente depois de uma ação do jogador.
 
 ## Funcionalidades
 
-- Geração de senhas entre 8 e 32 caracteres
+- Geração de senhas entre 8 e 32 caracteres com Web Crypto API
 - Seleção de letras maiúsculas, minúsculas, números e símbolos
-- Aleatoriedade segura com `crypto.getRandomValues`
 - Inclusão garantida de pelo menos um caractere de cada grupo selecionado
-- Análise de força com score, classificação e feedback
-- Dicas simples para melhorar senhas fracas ou médias
+- Análise de força com score, classificação, feedback e dicas de melhoria
 - Frases-senha, perfis recomendados e exclusão de caracteres ambíguos
 - Modo rápido para gerar e copiar sem jogar
 - Senha mascarada até a conclusão do desafio
-- Minijogo em Canvas com movimentação em grade
-- Pixel-art procedural com cidade animada, sprites em Canvas e efeitos de HUD
-- Quatro fragmentos de dados, dois bugs ICE, paredes e terminal final
-- Controles por WASD e setas
-- Controles direcionais por toque em telas menores
-- Cópia para a área de transferência após o desbloqueio
-- Terminal com logs das ações do laboratório
-- Tela de inicialização do cyberdeck com cidade em pixel art animada
-- Trilha ambiente e efeitos sintetizados com Web Audio API
-- Música procedural original com mixer de canais
-- Controle para silenciar toda a sessão
-- Dificuldades, cronômetro, pontuação, pausa e proteção inicial
-- Sistema de TRACE que mede ruído da incursão e penaliza rotas descuidadas
-- Habilidade Pulso Fantasma carregada por fragmentos para congelar bugs ICE
-- Três arquiteturas de cofre com comportamento e trilha próprios
-- Modo estratégico e remapeamento de controles por sessão
-- Aba de primeiro contato com origem, contexto cyberpunk e instruções rápidas
-- Entrada sem áudio, modo leve, brilho reduzido e controles maiores
-- Tutorial jogável curto antes do desafio principal
-- Navegação por Forja, ICEbreaker, Cofre e Arquivo
-- Desafio diário, carreira local, recordes e conquistas
-- Página 404 com orientação para a URL correta do GitHub Pages
-- Glossário de termos cyberpunk
+- Minijogo em Canvas com movimentação em grade, fragmentos, inimigos e terminal
+- Pixel art procedural, HUD animado, cidade de boot e sprites em Canvas
+- Trilha ambiente, efeitos sintetizados e mixer com Web Audio API
+- Controles por teclado, toque, modo estratégico e remapeamento por sessão
+- Tutorial jogável, modo leve, brilho reduzido e controles maiores
+- Dificuldades, cronômetro, pontuação, pausa, TRACE e conquistas locais
+- Desafio diário, carreira local e ranking com metadados não sensíveis
 - Expiração automática da credencial após inatividade
-- Ranking local apenas com metadados não sensíveis
-- Funcionamento offline como PWA
+- Funcionamento offline como PWA com Service Worker
 - Layout responsivo para desktop e telas menores
+
+## Decisões de produto
+
+- **Gerador como minijogo:** a camada de ICEbreaker transforma uma ação
+  utilitária em uma experiência interativa. O objetivo é criar retenção,
+  ritmo e identidade visual sem comprometer a função principal: gerar uma senha
+  forte.
+- **Aplicação totalmente frontend:** o projeto roda como site estático para
+  reduzir superfície operacional, facilitar publicação no GitHub Pages e manter
+  a senha no contexto local do navegador.
+- **Ranking sem senha:** a carreira local registra apenas metadados de jogo,
+  como pontuação, tempo, dificuldade e data. A senha gerada não entra no
+  ranking nem é persistida em armazenamento local.
 
 ## Tecnologias utilizadas
 
@@ -168,6 +162,22 @@ Alguns recursos dependem de APIs modernas do navegador:
 - A cópia da senha usa a Clipboard API e funciona melhor em `localhost` ou
   conexões HTTPS, como o GitHub Pages.
 - O gerador exige suporte à Web Crypto API.
+
+## Status atual
+
+O projeto está em versão estável para demonstração pública e portfólio. A
+aplicação principal, o PWA, o fluxo de publicação, os testes unitários e os
+testes E2E estão implementados.
+
+Limitações conhecidas:
+
+- O ICEbreaker é uma camada de interação, não uma barreira criptográfica contra
+  o próprio operador do navegador.
+- A senha existe temporariamente na memória enquanto a sessão está ativa.
+- A Clipboard API depende do contexto do navegador e funciona melhor em
+  `localhost` ou HTTPS.
+- A validação visual em Safari/iPhone real ainda está listada como melhoria
+  futura.
 
 ## Como publicar no GitHub Pages
 
@@ -272,8 +282,6 @@ e o terminal permanecem alcançáveis.
 ## Créditos
 
 Conceito, direção criativa e desenvolvimento por **Marcus**.
-
-> marcus esteve aqui, como esteve na cidade-luz.
 
 Os detalhes de autoria e identidade estão em [CREDITS.md](CREDITS.md).
 
